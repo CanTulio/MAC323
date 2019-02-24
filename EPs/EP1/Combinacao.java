@@ -102,7 +102,7 @@ public class Combinacao {
             // Armazena o valor de seq[pivot] sem perder o valor original 
             // do array.
 
-        if (n == 0 || k == 0) {
+        if (n == 0 || k == 0 || n < k) {
             finished = true;
         }
 
