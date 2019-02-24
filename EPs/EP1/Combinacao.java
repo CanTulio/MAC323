@@ -121,19 +121,21 @@ public class Combinacao {
                     max = novoMaximo(n, k, pivot);
                 }
 
-                if(pivot == 0 && seq[pivot] == max) {
+                if(seq[0] == max) {
                     finished = true;
                 }
 
-                aux = seq[pivot];
-                novoPivo = pivot;
+                else {
+                    aux = seq[pivot];
+                    newPivot = pivot;
 
-                while(novoPivo < k) {
-                    seq[novoPivo] = ++aux;
-                    novoPivo++;
+                    while(newPivot < k) {
+                        seq[newPivot] = ++aux;
+                        newPivot++;
+                    }
+
+                    pivot = k-1;
                 }
-
-                pivot = k-1;
             }
 
             max = novoMaximo(n, k, pivot);
