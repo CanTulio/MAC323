@@ -84,21 +84,23 @@ public class Combinacao {
     public static void combinacao(int n, int k) {
         
         if (k < 0 || n < 0) {
-            throw new IllegalArgumentException("Por favor, digite valores não negativos de n e k...\n");
+            throw new IllegalArgumentException("n e k devem ser não nulos.\n");
         }
 
         int seq[] = new int[k];
         boolean finished = false;
-            // Variavel booleana que determina o fim dos cálculos de combinacaoo(n,k).
+            // Variavel que determina o fim dos cálculos de combinacaoo(n,k).
 
         int pivot = k-1;
             // Variável que guarda a casa do vetor seq[] sendo analisada.
         int max = n;
-            // Guarda o valor máximo que cada casa do vetor seq[] pode ter. A função NovoMAximo() retorna o valor maximo para a casa de seq[] indicada por pivot.
+            // Guarda o valor máximo que cada casa do vetor seq[] pode ter. 
         int newPivot;
-            // Armazena um valor de pivot para modifica-lo sem perder a referencia ao valor original.
+            // Armazena um valor de pivot para modifica-lo sem perder a 
+            // referencia ao valor original.
         int aux;
-            // Armazena o valor de seq[pivot] sem perder o valor original do array.
+            // Armazena o valor de seq[pivot] sem perder o valor original 
+            // do array.
 
         if (n == 0 || k == 0) {
             finished = true;
@@ -140,22 +142,28 @@ public class Combinacao {
     }
 
     private static int novoMaximo(int n, int k, int pivot) {
+        // Método que retorna o valor maximo que o item seq[pivot] pode
+        // assumir dentro de uma combinação C(n,k).
         return( n-k+(pivot+1) );
     }
 
     private static void inicializaVetor(int[] seq, int tamanho) {
+        // Método que inicializa o vetor seq como uma sequencia [1, tamanho].
         for(int i = 0; i < tamanho; i++) {
             seq[i] = i+1;
         }
     }
 
-    private static void imprimeCombinacao(int[] seq, int tamanho, int opcao) { // eu acho mais legal se ele não colocar uma virgula no pivot
+    private static void imprimeCombinacao(int[] seq, int tamanho, int opcao) {
+        // Método que imprime o número de combinaçãoes de N tomado a K, e, se 
+        // opção = 1, imprime todas as combinações possíveis dados n e k.
         if(opcao == 0)
             imprimeVetor(seq, tamanho);
     }
 
-    private static void imprimeVetor(int[] v, int tamanho) {
-        for(int item : v) {
+    private static void imprimeVetor(int[] seq, int tamanho) {
+        // Método que itera o vetor seq[] e imprime seus itens.
+        for(int item : seq) {
             StdOut.print(item + " ");
         }
         StdOut.print('\n');
