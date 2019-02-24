@@ -74,7 +74,6 @@
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stopwatch;
 
-//TODO : rever quais variáveis são publicas e quais não sao
 
 public class Combinacao {
     private static int count = 0; // contador de combinações
@@ -92,14 +91,14 @@ public class Combinacao {
         boolean finished = false;
             // Variavel booleana que determina o fim dos cálculos de combinacaoo(n,k).
 
-        int pivo = k-1;
+        int pivot = k-1;
             // Variável que guarda a casa do vetor seq[] sendo analisada.
         int max = n;
-            // Guarda o valor máximo que cada casa do vetor seq[] pode ter. A função NovoMAximo() retorna o valor maximo para a casa de seq[] indicada por pivo.
-        int novoPivo;
-            // Armazena um valor de pivo para modifica-lo sem perder a referencia ao valor original.
+            // Guarda o valor máximo que cada casa do vetor seq[] pode ter. A função NovoMAximo() retorna o valor maximo para a casa de seq[] indicada por pivot.
+        int newPivot;
+            // Armazena um valor de pivot para modifica-lo sem perder a referencia ao valor original.
         int aux;
-            // Armazena o valor de seq[pivo] sem perder o valor original do array.
+            // Armazena o valor de seq[pivot] sem perder o valor original do array.
 
         if (n == 0 || k == 0) {
             finished = true;
@@ -107,38 +106,41 @@ public class Combinacao {
 
         inicializaVetor(seq, k);
 
-        while(!finished) {
+        while (!finished) {
 
             imprimeCombinacao(seq, k, opcao);   
-            if(seq[pivo] < max) {
-                seq[pivo]++;
+            if(seq[pivot] < max) {
+                seq[pivot]++;
             }
 
-            else { //backtracking
-                while(pivo > 0 && seq[pivo] >= max) {
-                    pivo--;
-                    max = novoMaximo(n, k, pivo);
+            else {
+                while(pivot > 0 && seq[pivot] >= max) {
+                    pivot--;
+                    max = novoMaximo(n, k, pivot);
                 }
 
-                if (pivo == 0 && seq[pivo] == max) {
+                if(pivot == 0 && seq[pivot] == max) {
                     finished = true;
                 }
-                aux = seq[pivo];
-                novoPivo = pivo; 
-                while (novoPivo < k) {
+
+                aux = seq[pivot];
+                novoPivo = pivot;
+
+                while(novoPivo < k) {
                     seq[novoPivo] = ++aux;
                     novoPivo++;
                 }
-                pivo = k-1;
+
+                pivot = k-1;
             }
 
-            max = novoMaximo(n, k, pivo);
+            max = novoMaximo(n, k, pivot);
             count++;
         }
     }
 
-    private static int novoMaximo(int n, int k, int pivo) {
-        return ( n-k+(pivo+1) );
+    private static int novoMaximo(int n, int k, int pivot) {
+        return( n-k+(pivot+1) );
     }
 
     private static void inicializaVetor(int[] seq, int tamanho) {
@@ -147,22 +149,17 @@ public class Combinacao {
         }
     }
 
-    private static void imprimeCombinacao(int[] seq, int tamanho, int opcao) { // eu acho mais legal se ele não colocar uma virgula no pivo
-        if (opcao == 0)
+    private static void imprimeCombinacao(int[] seq, int tamanho, int opcao) { // eu acho mais legal se ele não colocar uma virgula no pivot
+        if(opcao == 0)
             imprimeVetor(seq, tamanho);
     }
 
     private static void imprimeVetor(int[] v, int tamanho) {
-        for (int item : v) {
+        for(int item : v) {
             StdOut.print(item + " ");
         }
         StdOut.print('\n');
     }
-
-    // private static int numCombs (int n, int k) {
-    // TODO : Eu posso simplesmente remover o calculo do ncombs, e fazer todas combinações, depois contabilizar...
-
-    // }
 
     
     public static void main(String[] args) {
