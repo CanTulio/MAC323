@@ -23,10 +23,8 @@
 
     Exemplo:
 
-        A monitora me explicou que eu devia utilizar a função xyz().
-
-        O meu método xyz() foi baseada na descrição encontrada na 
-        página https://www.ime.usp.br/~pf/algoritmos/aulas/enumeracao.html.
+        Método perm2 obtido de : 
+        https://www.ime.usp.br/~coelho/mac0323-2019/eps/ep02/Permutations.java
 
     Descrição de ajuda ou indicação de fonte:
 
@@ -64,6 +62,47 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stopwatch;
 
 public class STPerms {
+    
+    // print n! permutation of the characters of the string s (in order)
+    public  static void perm1(String s) { perm1("", s); }
+    private static void perm1(String prefix, String s) {
+        int n = s.length();
+        if (n == 0) StdOut.println(prefix);
+        else {
+            for (int i = 0; i < n; i++)
+               perm1(prefix + s.charAt(i), s.substring(0, i) + s.substring(i+1, n));
+        }
+
+    }
+
+    // print n! permutation of the elements of array a (not in order)
+    public static void perm2(String s) {
+        int n = s.length();
+        char[] a = new char[n];
+        for (int i = 0; i < n; i++)
+            a[i] = s.charAt(i);
+        perm2(a, n);
+    }
+
+    private static void perm2(char[] a, int n) {
+        if (n == 1) {
+            StdOut.println(new String(a));
+            return;
+        }
+        for (int i = 0; i < n; i++) {
+            swap(a, i, n-1);
+            perm2(a, n-1);
+            swap(a, i, n-1);
+        }
+    }  
+
+    // swap the characters at indices i and j
+    private static void swap(char[] a, int i, int j) {
+        char c = a[i];
+        a[i] = a[j];
+        a[j] = c;
+    }
+    
 
     private static  void initArray(int n, char[] alphabet) {
         for (int i = 0; i < n; i++) {
@@ -87,7 +126,9 @@ public class STPerms {
         // char teste = (char)(n+97);
         char alphabet[] = new char[n];
         initArray(n, alphabet);
-        printArray(n, alphabet);
+        // printArray(n, alphabet);
+        String alph = new String(alphabet);
+        perm1(alph);
         // StdOut.println(teste);
         Stopwatch timer = new Stopwatch();
 
