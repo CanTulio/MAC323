@@ -21,10 +21,11 @@
     indique esse fato abaixo para que o seu programa não seja
     considerado plágio ou irregular.
 
-    Exemplo:
-
         Método perm2 obtido de : 
         https://www.ime.usp.br/~coelho/mac0323-2019/eps/ep02/Permutations.java
+
+        Método LIS inspirado em : 
+        https://hellokoding.com/longest-increasing-subsequence/
 
     Descrição de ajuda ou indicação de fonte:
 
@@ -60,14 +61,20 @@
 
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stopwatch;
-
+import java.util.Arrays;
+//TODO : padronizar identação
 public class STPerms {
     
     // print n! permutation of the characters of the string s (in order)
     public  static void perm1(String s) { perm1("", s); }
     private static void perm1(String prefix, String s) {
         int n = s.length();
-        if (n == 0) StdOut.println(prefix);
+        int lisTerm, ldsTerm;
+        if (n == 0) {
+           lisTerm = lis(prefix);
+           ldsTerm = lds(prefix);
+           StdOut.println("O LIS de " + prefix + " vale : " +  lisTerm + " e o LDS vale : " + ldsTerm); // aqui ele imprime a sequencia.
+        }    
         else {
             for (int i = 0; i < n; i++)
                perm1(prefix + s.charAt(i), s.substring(0, i) + s.substring(i+1, n));
@@ -101,6 +108,36 @@ public class STPerms {
         char c = a[i];
         a[i] = a[j];
         a[j] = c;
+    }
+
+    private static int lds(String s) {
+        char[] D = s.toCharArray();
+        int[] a = new int[D.length];
+        Arrays.fill(a, 1);
+
+        for (int i = 0; i < a.length; i++) {
+            for (int j = i+1; j < a.length; j++) {              
+                if (D[j] < D[i])
+                    a[i]++;
+            }
+        }
+
+        return Arrays.stream(a).max().getAsInt();
+    }
+
+    private static int lis(String s) {
+        char[] D = s.toCharArray();
+        int[] a = new int[D.length];
+        Arrays.fill(a, 1);
+
+        for (int i = 0; i < a.length; i++) {
+            for (int j = i+1; j < a.length; j++) {              
+                if (D[j] > D[i])
+                    a[i]++;
+            }
+        }
+
+        return Arrays.stream(a).max().getAsInt();
     }
     
 
