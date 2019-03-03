@@ -66,19 +66,22 @@ import java.util.Arrays;
 public class STPerms {
     
     // print n! permutation of the characters of the string s (in order)
-    public  static void perm1(String str, int s, int t) { perm1("", str, s, t); }
-    private static void perm1(String prefix, String str, int s, int t) {
+    public  static void perm1(String str, int s, int t, int opt) { perm1("", str, s, t, opt); }
+    private static void perm1(String prefix, String str, int s, int t,int opt) {
         int n = str.length();
         int lisTerm, ldsTerm;
         if (n == 0) {
            lisTerm = lis(prefix);
            ldsTerm = lds(prefix);
            if (lisTerm == s && ldsTerm == t)
-                StdOut.println(prefix); 
+                if (opt == 0)
+                    StdOut.println(prefix);
+                // else if (opt == 1)
+                //     StdOut.println(cont);
         }    
         else {
             for (int i = 0; i < n; i++)
-               perm1(prefix + str.charAt(i), str.substring(0, i) + str.substring(i+1, n), s, t);
+               perm1(prefix + str.charAt(i), str.substring(0, i) + str.substring(i+1, n), s, t, opt);
         }
 
     }
@@ -142,7 +145,7 @@ public class STPerms {
         initArray(n, alphabet);
         // printArray(n, alphabet);
         String alph = new String(alphabet);
-        perm1(alph, s, t);
+        perm1(alph, s, t, opt);
         // StdOut.println(teste);
         Stopwatch timer = new Stopwatch();
 
