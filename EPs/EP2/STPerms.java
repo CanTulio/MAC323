@@ -82,43 +82,17 @@ public class STPerms {
 
     }
 
-    // print n! permutation of the elements of array a (not in order)
-    public static void perm2(String s) {
-        int n = s.length();
-        char[] a = new char[n];
-        for (int i = 0; i < n; i++)
-            a[i] = s.charAt(i);
-        perm2(a, n);
-    }
-
-    private static void perm2(char[] a, int n) {
-        if (n == 1) {
-            StdOut.println(new String(a));
-            return;
-        }
-        for (int i = 0; i < n; i++) {
-            swap(a, i, n-1);
-            perm2(a, n-1);
-            swap(a, i, n-1);
-        }
-    }  
-
-    // swap the characters at indices i and j
-    private static void swap(char[] a, int i, int j) {
-        char c = a[i];
-        a[i] = a[j];
-        a[j] = c;
-    }
-
     private static int lds(String s) {
         char[] D = s.toCharArray();
         int[] a = new int[D.length];
         Arrays.fill(a, 1);
 
-        for (int i = 0; i < a.length; i++) {
-            for (int j = i+1; j < a.length; j++) {              
-                if (D[j] < D[i])
-                    a[i]++;
+        for (int i = 1; i < a.length; i++) {
+            for (int j = 0; j < i; j++) {              
+                if (D[j] > D[i] && a[i] < a[j]+1) {
+                    a[i] = a[j] + 1;
+                }
+                    
             }
         }
 
@@ -130,10 +104,12 @@ public class STPerms {
         int[] a = new int[D.length];
         Arrays.fill(a, 1);
 
-        for (int i = 0; i < a.length; i++) {
-            for (int j = i+1; j < a.length; j++) {              
-                if (D[j] > D[i])
-                    a[i]++;
+        for (int i = 1; i < a.length; i++) {
+            for (int j = 0; j < i; j++) {              
+                if (D[j] < D[i] && a[i] < a[j]+1) {
+                    a[i] = a[j] + 1;
+                }
+                    
             }
         }
 
