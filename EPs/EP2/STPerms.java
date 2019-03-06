@@ -62,7 +62,6 @@
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stopwatch;
 import java.util.Arrays;
-//TODO : padronizar identação
 public class STPerms {
     
     public static int cont = 0;
@@ -77,8 +76,6 @@ public class STPerms {
                cont++;
                 if (opt == 0 || opt == 2)
                     StdOut.println(prefix);
-                // else if (opt == 1)
-                //     StdOut.println(cont);
 
            }
         }    
@@ -144,15 +141,12 @@ public class STPerms {
         int t = Integer.parseInt(args[2]);
         int opt = Integer.parseInt(args[3]);
 
-        // char teste = (char)(n+97);
         char alphabet[] = new char[n];
         initArray(n, alphabet);
-        // printArray(n, alphabet);
         String alph = new String(alphabet);
         perm1(alph, s, t, opt);
         if (opt == 1 || opt == 2)
             StdOut.println(cont);
-        // StdOut.println(teste);
 
         StdOut.println("Elapsed time = " + timer.elapsedTime());
     }
