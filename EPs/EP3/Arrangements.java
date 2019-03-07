@@ -23,11 +23,8 @@
 
     Exemplo:
 
-        A monitora me explicou que eu devia utilizar a função xyz().
-
-        O meu método xyz() foi baseada na descrição encontrada na 
-        página https://www.ime.usp.br/~pf/algoritmos/aulas/enumeracao.html.
-
+        Método Iterator.next() inspirado em :  
+         *https://www.nayuki.io/page/next-lexicographical-permutation-algorithm
     Descrição de ajuda ou indicação de fonte:
 
 
@@ -50,8 +47,47 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class Arrangements implements Iterable<String> {
     // Construtor
-    public Arrangements() {
+    private char[] a; // talvez mover isso para dentro do construtor...
+    public Arrangements(String s) {
+        a = s.toCharArray()
+             .sort();
+        this.s = a;
+    }
 
+    public iterator<String> Iterator() {
+        return new ArrIterrator();
+    }
+
+    private class ArrIterrator implements Iterator<String> {
+        
+        public ArrIterrator() {
+
+        }
+
+        public boolean hasNext() {
+            //desperdiça uma iteração para o caso de uma string de 1 caracter
+            boolean crescente = false;
+            
+            for (int i = 0, char ant = this.s[0] ; i < this.s.length && !crescente; i++) {
+                if (this.s[i] > ant)
+                    crescente = true;
+                ant = this[i];
+            }
+
+            return crescente;
+        }
+
+        public String next() {
+            if (!hasNext())
+                throw new NoSuchElementException();
+            
+
+            
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     // Unit test
