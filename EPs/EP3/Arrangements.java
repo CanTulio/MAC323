@@ -32,6 +32,9 @@
     Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
 
 ****************************************************************/
+// TODO : precisa imprimir os casos nos quais só tem uma permutação (ou seja,
+// hasNext() retorna falso de cara)
+// TODO : entender por que caralhos minha treta com herança não funcionava
 
 // excessões pedidas
 import java.lang.IllegalArgumentException;
@@ -47,46 +50,82 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class Arrangements implements Iterable<String> {
     // Construtor
-    private char[] a; // talvez mover isso para dentro do construtor...
+    private final char[] first;
+
     public Arrangements(String s) {
-        a = s.toCharArray()
-             .sort();
-        this.s = a;
+        char[] a = s.toCharArray();
+        Arrays.sort(a);
+        first = a;
     }
 
-    public iterator<String> Iterator() {
+    public Iterator<String> iterator() {
         return new ArrIterrator();
     }
 
     private class ArrIterrator implements Iterator<String> {
-        
+        // TODO : o iterator precisa "resetar"
+        private char[] current;
         public ArrIterrator() {
-
-        }
-
-        public boolean hasNext() {
-            //desperdiça uma iteração para o caso de uma string de 1 caracter
-            boolean crescente = false;
-            
-            for (int i = 0, char ant = this.s[0] ; i < this.s.length && !crescente; i++) {
-                if (this.s[i] > ant)
-                    crescente = true;
-                ant = this[i];
-            }
-
-            return crescente;
+            current = first;
         }
 
         public String next() {
             if (!hasNext())
                 throw new NoSuchElementException();
-            
 
-            
+            //Encontra a maior sequencia não crescente (sufixo)
+            int i,j;
+            for (i = current.length-1; i > 0 && current[i] <= current[i-1]; i--);
+            // Nesse ponto, i é o elemento mais a esquerda do sufixo
+            int pivot = i - 1;
+            // e i-1 é o pivô. Precisamos encontrar o elemento mais a direita do
+            // sufixo que excede current[pivot]
+            for (j = current.length-1; current[j] <= current[pivot]; j--);
+            // certamente haverá j tal que current[j] <= current[pivot] porque 
+            // o vetor no intervalo [pivot+1, ..., n-1] é maior que pivot
+            // devido ao laço anterior.
+            swap(current, pivot, j);
+            reverse(current, i);
+            String nextString  = String.valueOf(current);
+            return nextString;
+        }
+
+
+        public boolean hasNext() {
+            //desperdiça uma iteração para o caso de uma string de 1 caracter
+            boolean crescente = false;
+            char ant = first[0];
+            for (int i = 0; i < first.length && !crescente; i++) {
+                if (first[i] > ant)
+                    crescente = true;
+                ant = first[i];
+            }
+
+            return crescente;
         }
 
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+
+        private void reverse(char[] v, int leftMost) {
+            // reverte o array a partir do elemento mais a esquerda do vetor.
+            char temp;
+
+            for (int j = v.length - 1; leftMost < j; j--) {
+                temp = v[leftMost];
+                v[leftMost] = v[j];
+                v[j] = temp;
+                leftMost++;
+                j++;
+            }
+        }
+
+        private void swap(char[] v, int i, int j) {
+            // Troca v[i] com v[j].
+            char temp = v[i];
+            v[i] = v[j];
+            v[j] = temp;
         }
     }
 
