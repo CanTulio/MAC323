@@ -20,7 +20,7 @@
     você tenha utilizado alguma informação, trecho de código,...
     indique esse fato abaixo para que o seu programa não seja
     considerado plágio ou irregular.
-    
+
         Método Iterator.next() inspirado em :  
          *https://www.nayuki.io/page/next-lexicographical-permutation-algorithm
     Descrição de ajuda ou indicação de fonte:
@@ -102,8 +102,10 @@ public class Arrangements implements Iterable<String> {
                     crescente = true;
                 ant = current[i];
             }
-            if (!crescente)
-                current = first.clone();
+            // if (!crescente) {
+            //     current = first.clone();
+            //     StdOut.println("alooo quebrada");
+            // }
             return (crescente || isFirst); // caso seja a primeira permutação, imprima.
         }
 
