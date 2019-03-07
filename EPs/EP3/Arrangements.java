@@ -20,9 +20,7 @@
     você tenha utilizado alguma informação, trecho de código,...
     indique esse fato abaixo para que o seu programa não seja
     considerado plágio ou irregular.
-
-    Exemplo:
-
+    
         Método Iterator.next() inspirado em :  
          *https://www.nayuki.io/page/next-lexicographical-permutation-algorithm
     Descrição de ajuda ou indicação de fonte:
@@ -32,9 +30,6 @@
     Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
 
 ****************************************************************/
-// TODO : precisa imprimir os casos nos quais só tem uma permutação (ou seja,
-// hasNext() retorna falso de cara)
-// TODO : entender por que caralhos minha treta com herança não funcionava
 
 // excessões pedidas
 import java.lang.IllegalArgumentException;
@@ -63,19 +58,26 @@ public class Arrangements implements Iterable<String> {
     }
 
     private class ArrIterrator implements Iterator<String> {
-        // TODO : o iterator precisa "resetar"
+
         private char[] current;
+        private boolean isFirst;
+
         public ArrIterrator() {
-            current = first;
+            isFirst = true;
+            current = first.clone();
         }
 
         public String next() {
             if (!hasNext())
                 throw new NoSuchElementException();
+            if (isFirst) {
+                isFirst = false;
+                return String.valueOf(current);
+            }
 
             //Encontra a maior sequencia não crescente (sufixo)
             int i,j;
-            for (i = current.length-1; i > 0 && current[i] <= current[i-1]; i--);
+            for (i = current.length-1; i > 0 && current[i-1] >= current[i]; i--);
             // Nesse ponto, i é o elemento mais a esquerda do sufixo
             int pivot = i - 1;
             // e i-1 é o pivô. Precisamos encontrar o elemento mais a direita do
@@ -94,14 +96,15 @@ public class Arrangements implements Iterable<String> {
         public boolean hasNext() {
             //desperdiça uma iteração para o caso de uma string de 1 caracter
             boolean crescente = false;
-            char ant = first[0];
-            for (int i = 0; i < first.length && !crescente; i++) {
-                if (first[i] > ant)
+            char ant = current[0];
+            for (int i = 0; i < current.length && !crescente; i++) {
+                if (current[i] > ant)
                     crescente = true;
-                ant = first[i];
+                ant = current[i];
             }
-
-            return crescente;
+            if (!crescente)
+                current = first.clone();
+            return (crescente || isFirst); // caso seja a primeira permutação, imprima.
         }
 
         public void remove() {
@@ -117,7 +120,7 @@ public class Arrangements implements Iterable<String> {
                 v[leftMost] = v[j];
                 v[j] = temp;
                 leftMost++;
-                j++;
+                j--;
             }
         }
 
