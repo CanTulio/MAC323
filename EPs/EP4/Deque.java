@@ -72,6 +72,7 @@ import java.lang.UnsupportedOperationException;
 import java.util.NoSuchElementException;
 
 import java.util.Iterator;
+import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 public class Deque<Item> implements Iterable<Item> {
@@ -95,7 +96,8 @@ public class Deque<Item> implements Iterable<Item> {
     // construct an empty deque
     public Deque() {
         n = 0;
-        first = last = null;
+        first = null;
+        last = null;
     }
 
     // is the deque empty?
@@ -111,6 +113,8 @@ public class Deque<Item> implements Iterable<Item> {
     // add the item to the front
     public void addFirst(Item item) {
         node<Item> newContent = new node<Item>(item, first, null);
+        if (n == 0)
+            last = newContent;
         first = newContent;
         n++;
     }
@@ -118,8 +122,9 @@ public class Deque<Item> implements Iterable<Item> {
     // add the item to the back
     public void addLast(Item item) {
         node<Item> newContent = new node<Item>(item, null, last);
-        last.next = newContent;
-        last = newContent; 
+        if (n == 0)
+            first = newContent;
+        last = newContent;
         n++;
     }
 
@@ -169,7 +174,31 @@ public class Deque<Item> implements Iterable<Item> {
     }
     // unit testing (required)
     public static void main(String[] args) {
-        
+        Deque <Character> teste = new Deque<Character>();
+        StdOut.println("O Deque está vazio? " + teste.isEmpty());
+        while (StdIn.hasNextChar()) {
+
+            char testeChar = StdIn.readChar();
+            if (testeChar != ' ') {
+                StdOut.println("-------Tamanho do Deque : " + teste.size()+"----");
+                StdOut.println("Inserindo no início...");
+                teste.addFirst(testeChar);
+                StdOut.println("Inserindo no fim...");
+                teste.addLast(testeChar);
+            }
+        }
+
+        while (!teste.isEmpty()) {
+                StdOut.println("-------Tamanho do Deque : " + teste.size()+"----");
+                StdOut.println("Deletando do início...");
+                teste.removeFirst();
+                StdOut.println("Deletando do fim...");
+                teste.removeLast();
+        }
+
+        StdOut.println(teste.size());
+        StdOut.println("O Deque está vazio? " + teste.isEmpty());
+
     }
 
 }
