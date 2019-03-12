@@ -41,32 +41,6 @@
 // iterador : Toda operação deve rodar em tempo constante
 
 
-/* *************CHEAT SHEET DE MEMORIA *************************************
-
-int, float : 4 bytes
-char : 2 bytes
-boolean : 1 byte
-Referencia a um objeto : 8 bytes
-    Tamanho de um objeto : endereço + variáveis de instancia + padding
-    (o java quer fixar a memória de um objeto em múltiplos de 8bytes numa maqui
-    na de 64bits)
-
-Uma lista ligada simples ocupa : 
-    * 8 bytes para a inner class da lista.
-    * 8 bytes para referenciar o header da classe na qual a lista está sendo 
-        implementada.
-    * 8 bytes para referenciar o objeto de dados (no máximo)
-        * se esse objeto tiver só um int, ocupa 4 bytes. Mas dai o objeto ocuparia
-        12 bytes e ele arredonda pra 16
-    * 8 bytes para referenciar a proxima lista.
-
-    Total lista ligada simples : 40 bytes
-
-* Assim, uma lista ligada dupla ocupa 48 bytes
-
-
-*/
-
 import java.lang.IllegalArgumentException;
 import java.lang.UnsupportedOperationException;
 import java.util.NoSuchElementException;
