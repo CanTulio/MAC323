@@ -115,8 +115,13 @@ public class Deque<Item> implements Iterable<Item> {
         node<Item> newContent = new node<Item>(item, first, null);
         if (n == 0)
             last = newContent;
+        else
+            first.prev = newContent;
         first = newContent;
         n++;
+        if (first == null) {
+            StdOut.println("Da problea quando n vale " + n);
+        }
     }
 
     // add the item to the back
@@ -124,25 +129,27 @@ public class Deque<Item> implements Iterable<Item> {
         node<Item> newContent = new node<Item>(item, null, last);
         if (n == 0)
             first = newContent;
+        else
+            last.next = newContent;
         last = newContent;
         n++;
     }
 
     // remove and return the item from the front
     public Item removeFirst() {
-        node<Item> temp = first.next;
+
         Item content = first.item;
-        // first.next = null; talvez seja desnescessário
-        first = null;
+        first = first.next;
         n--;
         return content;
     }
 
     // remove and return the item from the back
-    public Item removeLast() { // essa mini operação me obriga a fazer uma lista duplamente ligada grrrr 
+    public Item removeLast() {
+
         Item content = last.item;
-        last.prev.next = null;
         last = last.prev;
+        n--;
         return content;
 
     }
@@ -174,30 +181,29 @@ public class Deque<Item> implements Iterable<Item> {
     }
     // unit testing (required)
     public static void main(String[] args) {
-        Deque <Character> teste = new Deque<Character>();
-        StdOut.println("O Deque está vazio? " + teste.isEmpty());
+
+        Deque <Character> deque = new Deque<Character>();
+        StdOut.println("O Deque está vazio? " + deque.isEmpty());
         while (StdIn.hasNextChar()) {
 
-            char testeChar = StdIn.readChar();
-            if (testeChar != ' ') {
-                StdOut.println("-------Tamanho do Deque : " + teste.size()+"----");
-                StdOut.println("Inserindo no início...");
-                teste.addFirst(testeChar);
-                StdOut.println("Inserindo no fim...");
-                teste.addLast(testeChar);
+            char dequeChar = StdIn.readChar();
+            if (dequeChar != ' ') {
+                StdOut.println("-------Tamanho do Deque : " + deque.size()+"----");
+                StdOut.println("Inserindo no início o caracter " + dequeChar);
+                deque.addFirst(dequeChar);
+                StdOut.println("Inserindo no fim o caracter " + dequeChar);
+                deque.addLast(dequeChar);
             }
         }
 
-        while (!teste.isEmpty()) {
-                StdOut.println("-------Tamanho do Deque : " + teste.size()+"----");
-                StdOut.println("Deletando do início...");
-                teste.removeFirst();
-                StdOut.println("Deletando do fim...");
-                teste.removeLast();
+        while (!deque.isEmpty()) {
+                StdOut.println("-------Tamanho do Deque : " + deque.size()+"----");
+                StdOut.println("Deletando do inicio...");
+                deque.removeFirst();
         }
 
-        StdOut.println(teste.size());
-        StdOut.println("O Deque está vazio? " + teste.isEmpty());
+        StdOut.println(deque.size());
+        StdOut.println("O Deque está vazio? " + deque.isEmpty());
 
     }
 
