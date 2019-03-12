@@ -112,6 +112,11 @@ public class Deque<Item> implements Iterable<Item> {
 
     // add the item to the front
     public void addFirst(Item item) {
+
+        if (item == null) {
+            throw new IllegalArgumentException();
+        }
+
         node<Item> newContent = new node<Item>(item, first, null);
         if (n == 0)
             last = newContent;
@@ -126,6 +131,11 @@ public class Deque<Item> implements Iterable<Item> {
 
     // add the item to the back
     public void addLast(Item item) {
+
+        if (item == null) {
+            throw new IllegalArgumentException();
+        }
+
         node<Item> newContent = new node<Item>(item, null, last);
         if (n == 0)
             first = newContent;
@@ -137,6 +147,9 @@ public class Deque<Item> implements Iterable<Item> {
 
     // remove and return the item from the front
     public Item removeFirst() {
+        
+        if (n == 0)
+            throw new NoSuchElementException();
 
         Item content = first.item;
         first = first.next;
@@ -146,6 +159,9 @@ public class Deque<Item> implements Iterable<Item> {
 
     // remove and return the item from the back
     public Item removeLast() {
+
+        if (n == 0)
+            throw new NoSuchElementException();
 
         Item content = last.item;
         last = last.prev;
@@ -162,16 +178,20 @@ public class Deque<Item> implements Iterable<Item> {
     private class DoubleListIterator implements Iterator<Item> {
         private node<Item> current;
         public DoubleListIterator(node<Item> start) {
-            //construtor do iterador
             current = start;
         }
         public Item next() {
+
+        if (!hasNext())
+            throw new NoSuchElementException();
+
+            Item currentItem = current.item;
             current = current.next;
-            return current.item;
+            return currentItem;
         }
 
         public boolean hasNext() {
-            return !(current.next == null);
+            return current != null;
         }
 
         public void remove() {
@@ -181,28 +201,62 @@ public class Deque<Item> implements Iterable<Item> {
     }
     // unit testing (required)
     public static void main(String[] args) {
-
         Deque <Character> deque = new Deque<Character>();
         StdOut.println("O Deque está vazio? " + deque.isEmpty());
+        
+        
+//---------------------------TESTE DA INSERÇÃO NO FIM-------------------------//
         while (StdIn.hasNextChar()) {
-
             char dequeChar = StdIn.readChar();
             if (dequeChar != ' ') {
                 StdOut.println("-------Tamanho do Deque : " + deque.size()+"----");
-                StdOut.println("Inserindo no início o caracter " + dequeChar);
-                deque.addFirst(dequeChar);
+                // StdOut.println("Inserindo no início o caracter " + dequeChar);
+                // deque.addFirst(dequeChar);
                 StdOut.println("Inserindo no fim o caracter " + dequeChar);
                 deque.addLast(dequeChar);
             }
         }
+//----------------------------------------------------------------------------//
 
+//------------------------TESTE DO ITERADOR-----------------------------------//
+        char letras[] = new char[deque.n];
+        int count = 0;
+
+        for(char atual : deque) { // o iterador ta pulando o primeiro item
+            letras[count] = atual;
+            StdOut.println("Item atual : " + atual);
+            count++;
+        }
+
+        boolean finished;
+
+        finished = count == deque.n;
+        StdOut.println("Imprimi todos os itens? " + finished);
+//----------------------------------------------------------------------------//
+
+//--------------------TESTE DA REMOÇÃO NO INÍCIO------------------------------//
         while (!deque.isEmpty()) {
-                StdOut.println("-------Tamanho do Deque : " + deque.size()+"----");
+                StdOut.println("----Tamanho do Deque : " + deque.size()+"----");
                 StdOut.println("Deletando do inicio...");
                 deque.removeFirst();
         }
+//----------------------------------------------------------------------------//
 
-        StdOut.println(deque.size());
+//---------------------TESTE DA INSERÇÃO NO INÍCIO----------------------------//
+        for (char atual : letras) {
+            StdOut.println("Inserindo no início o caracter " + atual);
+            deque.addFirst(atual);
+        }
+//----------------------------------------------------------------------------//
+
+//--------------------TESTE DA REMOÇÃO NO FIM---------------------------------//
+        while (!deque.isEmpty()) {
+                StdOut.println("----Tamanho do Deque : " + deque.size()+"----");
+                StdOut.println("Deletando do fim...");
+                deque.removeLast();
+        }
+//------------------------------------------------------------------------------
+        StdOut.println("Imprimi " + count + " itens e meu deck tem tamanho " + deque.n);
         StdOut.println("O Deque está vazio? " + deque.isEmpty());
 
     }
