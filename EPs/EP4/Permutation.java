@@ -35,3 +35,25 @@
     Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
 
 ****************************************************************/
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdIn;
+
+
+public class Permutation {
+    public static void main(String[] args) {
+        if(args.length != 1) {
+            throw new IllegalArgumentException("O programa só aceita um parametro");
+        }
+        String[] entrada = StdIn.readAllStrings();
+        int k = Integer.parseInt(args[0]);
+        if (k > entrada.length)
+            throw new IllegalArgumentException("k deve ser menor ou igual a n");
+        RandomizedQueue <String> randFila = new RandomizedQueue<String>();
+        
+        for(String teste : entrada)
+            randFila.enqueue(teste);
+        
+        for(int cont = 0; !randFila.isEmpty() && cont < k; cont++)
+            StdOut.println(randFila.dequeue());
+    }
+}
