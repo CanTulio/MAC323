@@ -34,12 +34,21 @@
 
     Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
 
+    O EP apresenta problemas na hora de instanciar um array generico. O java 
+    acusa um erro na linha 68 (e na linha 152) caso a operação feita for
+    
+    queue = (Item[]) new Object[1];
+
+    O erro apontado é : error: <identifier> expected
+
+    Não consegui conserta-lo de formas tradicionais, mas vi que é possível 
+    evitar o erro se eu fizer a declaração colocando o tipo do array antes do
+    seu nome. Mas como a declaração de queue foi feito antes do construtor,
+    e achei deselegante inicializar o array fora do construtor, deixei dessa
+    forma
+
 ****************************************************************/
 
-// TODO : checar se eu posso usar variaveis que instanciei no this de outra forma
-// exemplo : this.n = 0, e posteriormente usar
-
-// TODO : ta dando problema na hora de fazer o deque e realizar o downsize
 import java.lang.UnsupportedOperationException;
 import java.util.NoSuchElementException;
 import java.lang.IllegalArgumentException;
@@ -55,9 +64,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private Item[] queue;
     private int n;
 
-    public RandomizedQueue() { // TODO : resolver essa gambiarra
+    public RandomizedQueue() {
         @SuppressWarnings("unchecked")
-        Item[] queue2 = (Item[]) new Object[1];
+        Item[] queue2= (Item[]) new Object[1];
         queue = queue2;
         n = 0;
     }
@@ -84,18 +93,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     // remove and return a random item
     public Item dequeue() {
-        // if (n <= queue.length/4) {
-        //     queue = resize(queue, n/4);
-        // }
 
-        // Random generator = new Random();
         int randomIndex = StdRandom.uniform(n);
         swap(queue, randomIndex, n-1);
         Item randomValue = queue[randomIndex];
 
-
         queue[n-1] = null;
         n--;
+
         return randomValue;
 
     }
@@ -189,18 +194,10 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
 
         for(char teste : randFila) {
-            // StdOut.println("Teste do foreach. Char aleatorio : " + teste);
-            // for (char teste2 : randFila) {
-            //     StdOut.println("Combinacao : " + teste + teste2);
-            // }
             StdOut.println("Teste1 : " + teste);
         }
 
         for(char teste : randFila) {
-            // StdOut.println("Teste do foreach. Char aleatorio : " + teste);
-            // for (char teste2 : randFila) {
-            //     StdOut.println("Combinacao : " + teste + teste2);
-            // }
             StdOut.println("Teste2 : " + teste);
         }
 
