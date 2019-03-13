@@ -54,14 +54,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     // construct an empty randomized queue
     private Item[] queue;
     private int n;
-    private int topo;
 
     public RandomizedQueue() { // TODO : resolver essa gambiarra
         @SuppressWarnings("unchecked")
         Item[] queue2 = (Item[]) new Object[1];
         queue = queue2;
         n = 0;
-        topo = 0;
     }
 
 
@@ -82,7 +80,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
         queue[n] = item;
         n++;
-        topo++;
     }
 
     // remove and return a random item
@@ -99,7 +96,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         queue[n-1] = null;
         n--;
-        topo--;
         return randomValue;
 
     }
@@ -116,8 +112,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     private void swap(Item[] arr, int index1, int index2) {
-        StdOut.println("O tamanho do vetor vale " + arr.length);
-        StdOut.println("index1 : " + index1 + " index2 : " + index2);
         Item temp = arr[index1];
         arr[index1] = arr[index2];
         arr[index2] = temp;
@@ -137,12 +131,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         for (int i = 0; i < smallerSize; i++) {
             newArray[i] = oldArray[i];
         }
-        StdOut.println("O resize foi feito e o novo valor vale " + newSize);
         return newArray;
     }
     private class RandomizedQueueIterator implements Iterator<Item> {
         int iteratorsRandomIndex;
         Item[] queueCopy;
+        private int topo;
         public RandomizedQueueIterator() {
             
             @SuppressWarnings("unchecked")
@@ -151,11 +145,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             for (int i = 0; i < n; i ++) {
                 queueCopy[i] = queue[i];
             }
+            topo = n-1;
+
 
         }
         public Item next() {
-            if (!hasNext())
+            if (!hasNext()) {
                 throw new NoSuchElementException();
+            }
 
             iteratorsRandomIndex = StdRandom.uniform(n);
             swap(queueCopy, iteratorsRandomIndex, topo);
@@ -166,7 +163,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
 
         public boolean hasNext() {
-            return topo > 0;
+            return topo != -1;
         }
 
         public void remove() {
@@ -187,6 +184,31 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         randFila.enqueue('E');
         StdOut.println("Temos " + randFila.size() + " termos");
         StdOut.println("Termo aleatorio : " + randFila.sample());
+        for(int i = 0; i < randFila.size(); i++) {
+            StdOut.println("Item aleatorio : " + randFila.sample());
+        }
+
+        for(char teste : randFila) {
+            // StdOut.println("Teste do foreach. Char aleatorio : " + teste);
+            // for (char teste2 : randFila) {
+            //     StdOut.println("Combinacao : " + teste + teste2);
+            // }
+            StdOut.println("Teste1 : " + teste);
+        }
+
+        for(char teste : randFila) {
+            // StdOut.println("Teste do foreach. Char aleatorio : " + teste);
+            // for (char teste2 : randFila) {
+            //     StdOut.println("Combinacao : " + teste + teste2);
+            // }
+            StdOut.println("Teste2 : " + teste);
+        }
+
+        for(char teste1 : randFila) {
+            for(char teste2 : randFila) {
+                StdOut.println("Teste intercalado : " + teste1 + teste2);
+            }
+        }
         while(!randFila.isEmpty()) {
             StdOut.println("Removendo o termo : " + randFila.dequeue());
             StdOut.println("Temos um total de " + randFila.size() + " termos");
