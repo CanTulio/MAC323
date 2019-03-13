@@ -50,8 +50,8 @@ public class Permutation {
             throw new IllegalArgumentException("k deve ser menor ou igual a n");
         RandomizedQueue <String> randFila = new RandomizedQueue<String>();
         
-        for(String teste : entrada)
-            randFila.enqueue(teste);
+        for(String tokenEntrada : entrada)
+            randFila.enqueue(tokenEntrada);
         
         for(int cont = 0; !randFila.isEmpty() && cont < k; cont++)
             StdOut.println(randFila.dequeue());
