@@ -35,31 +35,39 @@
     Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
 
 ****************************************************************/
+
+// TODO : checar se eu posso usar variaveis que instanciei no this de outra forma
+// exemplo : this.n = 0, e posteriormente usar
+
+// TODO : ta dando problema na hora de fazer o deque e realizar o downsize
 import java.lang.UnsupportedOperationException;
 import java.util.NoSuchElementException;
 import java.lang.IllegalArgumentException;
 
-import java.util.Random;
 import java.util.Iterator;
 
-import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
     // construct an empty randomized queue
-    Item[] queue;
+    private Item[] queue;
     private int n;
     private int topo;
-    public RandomizedQueue() {
-        this.queue = (Item[]) new Object[10];
-        this.n = 0;
+
+    public RandomizedQueue() { // TODO : resolver essa gambiarra
+        @SuppressWarnings("unchecked")
+        Item[] queue2 = (Item[]) new Object[1];
+        queue = queue2;
+        n = 0;
+        topo = 0;
     }
 
 
     // is the randomized queue empty?
     public boolean isEmpty() {
-        return n==0;
+        return n == 0;
     }
 
     // return the number of items on the randomized queue
@@ -69,41 +77,120 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     // add the item
     public void enqueue(Item item) {
-        if (n < this.queue.length) {
-            this.queue[this.n] = item; // devo usar o this?
-            n++;
+        if (n == queue.length) {
+            queue = resize(queue, 2*n);
         }
-        else {
-            resize(this.queue, 2*n);
-        }
+        queue[n] = item;
+        n++;
+        topo++;
     }
 
     // remove and return a random item
     public Item dequeue() {
+        // if (n <= queue.length/4) {
+        //     queue = resize(queue, n/4);
+        // }
+
+        // Random generator = new Random();
+        int randomIndex = StdRandom.uniform(n);
+        swap(queue, randomIndex, n-1);
+        Item randomValue = queue[randomIndex];
+
+
+        queue[n-1] = null;
+        n--;
+        topo--;
+        return randomValue;
 
     }
 
     // return a random item (but do not remove it)
     public Item sample() {
-
+        int randomIndex = StdRandom.uniform(n);
+        return queue[randomIndex];
     }
 
     // return an independent iterator over items in random order
     public Iterator<Item> iterator() {
-
+        return new RandomizedQueueIterator();
     }
 
-    private Item[] resize(Item[] oldArray) {
+    private void swap(Item[] arr, int index1, int index2) {
+        StdOut.println("O tamanho do vetor vale " + arr.length);
+        StdOut.println("index1 : " + index1 + " index2 : " + index2);
+        Item temp = arr[index1];
+        arr[index1] = arr[index2];
+        arr[index2] = temp;
+    }
+
+    private Item[] resize(Item[] oldArray, int newSize) {
+        int smallerSize;
         int oldSize =  oldArray.length;
-        Item[] newArray = (Item[]) new Object(2*oldSize);
-        for (int i = 0; i < oldSize; i++) {
+        @SuppressWarnings("unchecked")
+        Item[] newArray = (Item[]) new Object[newSize];
+
+        if (newSize < oldSize)
+            smallerSize = newSize;
+        else
+            smallerSize = oldSize;
+
+        for (int i = 0; i < smallerSize; i++) {
             newArray[i] = oldArray[i];
         }
+        StdOut.println("O resize foi feito e o novo valor vale " + newSize);
         return newArray;
     }
+    private class RandomizedQueueIterator implements Iterator<Item> {
+        int iteratorsRandomIndex;
+        Item[] queueCopy;
+        public RandomizedQueueIterator() {
+            
+            @SuppressWarnings("unchecked")
+            Item[] queueCopy2 = (Item[]) new Object[n];
+            queueCopy = queueCopy2;
+            for (int i = 0; i < n; i ++) {
+                queueCopy[i] = queue[i];
+            }
+
+        }
+        public Item next() {
+            if (!hasNext())
+                throw new NoSuchElementException();
+
+            iteratorsRandomIndex = StdRandom.uniform(n);
+            swap(queueCopy, iteratorsRandomIndex, topo);
+            Item antigoTopo = queueCopy[topo];
+            topo--;
+            
+            return antigoTopo;
+        }
+
+        public boolean hasNext() {
+            return topo > 0;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+    }
+
+
     // unit testing (required)
     public static void main(String[] args) {
-        
+        RandomizedQueue <Character> randFila = new RandomizedQueue<Character>();
+        StdOut.println("O randQueue está vazio? " + randFila.isEmpty());
+        randFila.enqueue('A');
+        randFila.enqueue('B');
+        randFila.enqueue('C');
+        randFila.enqueue('D');
+        randFila.enqueue('E');
+        StdOut.println("Temos " + randFila.size() + " termos");
+        StdOut.println("Termo aleatorio : " + randFila.sample());
+        while(!randFila.isEmpty()) {
+            StdOut.println("Removendo o termo : " + randFila.dequeue());
+            StdOut.println("Temos um total de " + randFila.size() + " termos");
+        }
     }
 
 }
