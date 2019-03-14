@@ -96,7 +96,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         int randomIndex = StdRandom.uniform(n);
         swap(queue, randomIndex, n-1);
-        Item randomValue = queue[randomIndex];
+        Item randomValue = queue[n-1];
 
         queue[n-1] = null;
         n--;
