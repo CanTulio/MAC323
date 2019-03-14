@@ -93,6 +93,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     // remove and return a random item
     public Item dequeue() {
+        if (n == queue.length/4 && n/4 > 0)
+            resize(queue, n/4);
 
         int randomIndex = StdRandom.uniform(n);
         swap(queue, randomIndex, n-1);
