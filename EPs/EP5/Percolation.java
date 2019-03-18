@@ -39,41 +39,81 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 import edu.princeton.cs.algs4.StdOut;
 
+// TODO : faz sentido eu usar o this para varias coisas? Isso não violaria
+// o encapsulamento?
+
+// TODO : entender a dinamica do EP. Eu vou receber uma matriz pronta, é isso?
+
+
+
 public class Percolation {
 
     // creates n-by-n grid, with all sites initially blocked
+    private [][] Boolean sitesOpen;
+    private [][] Boolean sitesFull;
+    private int topSite;
+    private int bottomSite;
+    private int openSites;
+
+
     public Percolation(int n) {
+        
+        openSites = 0;
+        topSite = -1;
+        bottomSite = n;
+        sitesOpen = new Boolean[n][n];
+        sitesFull = new Boolean[n][n];
+
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                sitesOpen[i][j] = false;
+                sitesFull = false;
+            }
+        }
+
+        for (int i = 0; i < n; i++){
+            WeightedQuickUnionUF.union(topSite, toIndex(i, 0));
+            WeightedQuickUnionUF.union(bottomSite, toIndex(n-1, i));
+        }
+
 
     }
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
-
+        sitesOpen[row][col] = true;
     }
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
-
+        return sitesOpen[row][col];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
-
+        return sitesFull[row][col];
     }
 
     // returns the number of open sites
     public int numberOfOpenSites() {
-
+        return WeightedQuickUnionUF.count(topSite); // TODO : Não deveria relacionar de alguma forma com o bottomSite?
     }
 
     // does the system percolate?
     public boolean percolates() {
-
+        return WeightedQuickUnionUF.connected(topSite, bottomSite);
     }
 
     // unit testing (required)
     public static void main(String[] args) {
-        
+
+    }
+
+    // Makes the matrix indexes linear
+    private int toIndex(int i, int j) {
+        int newIndex = this.n*i + j;
+        return newIndex;
+
     }
 
 }
