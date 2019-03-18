@@ -39,6 +39,8 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.lang.IllegalArgumentException;
+
 // TODO : faz sentido eu usar o this para varias coisas? Isso não violaria
 // o encapsulamento?
 
@@ -57,7 +59,11 @@ public class Percolation {
 
 
     public Percolation(int n) {
+
+        if (n <= 0)
+            throw new IllegalArgumentException
         
+        this.n = n;
         openSites = 0;
         topSite = -1;
         bottomSite = n;
@@ -81,16 +87,22 @@ public class Percolation {
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
+        if ( row > this.n || row < 0 || col > this.n || col < 0 )
+            throw new IllegalArgumentException()
         sitesOpen[row][col] = true;
     }
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
+        if ( row > this.n || row < 0 || col > this.n || col < 0 )
+            throw new IllegalArgumentException()
         return sitesOpen[row][col];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
+        if ( row > this.n || row < 0 || col > this.n || col < 0 )
+            throw new IllegalArgumentException()
         return sitesFull[row][col];
     }
 
