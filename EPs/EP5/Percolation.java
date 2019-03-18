@@ -90,6 +90,7 @@ public class Percolation {
         if ( row > this.n || row < 0 || col > this.n || col < 0 )
             throw new IllegalArgumentException()
         sitesOpen[row][col] = true;
+        // TODO : ao abrir um site, precisa conectar a todos os sites adjacentes que estejam abertos 
     }
 
     // is the site (row, col) open?
