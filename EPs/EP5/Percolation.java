@@ -42,79 +42,89 @@ import edu.princeton.cs.algs4.StdOut;
 import java.lang.IllegalArgumentException;
 
 // TODO : faz sentido eu usar o this para varias coisas? Isso não violaria
-// o encapsulamento?
+// o encapsulamento? Eu acho que não por causa da palavra"private", vou conferir
 
 // TODO : entender a dinamica do EP. Eu vou receber uma matriz pronta, é isso?
+// TODO : quando tornar um quadrado "Full"?, ou seja, parte do caminho que em 
+// tese percola
 
 
 
 public class Percolation {
 
     // creates n-by-n grid, with all sites initially blocked
-    private [][] Boolean sitesOpen;
-    private [][] Boolean sitesFull;
+    private boolean[][] sitesOpen;
     private int topSite;
     private int bottomSite;
     private int openSites;
+    private int n;
+    private WeightedQuickUnionUF WQUF;
 
 
     public Percolation(int n) {
 
         if (n <= 0)
-            throw new IllegalArgumentException
-        
+            throw new IllegalArgumentException();
+        WQUF = new WeightedQuickUnionUF(n*n);
         this.n = n;
         openSites = 0;
         topSite = -1;
         bottomSite = n;
-        sitesOpen = new Boolean[n][n];
-        sitesFull = new Boolean[n][n];
+        sitesOpen = new boolean[n][n];
 
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
                 sitesOpen[i][j] = false;
-                sitesFull = false;
             }
         }
 
-        for (int i = 0; i < n; i++){
-            WeightedQuickUnionUF.union(topSite, toIndex(i, 0));
-            WeightedQuickUnionUF.union(bottomSite, toIndex(n-1, i));
-        }
+        // for (int i = 0; i < n; i++){
+        //     WQUF.union(topSite, toIndex(i, 0));
+        //     WQUF.union(bottomSite, toIndex(n-1, i));
+        // }
 
 
     }
 
+
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
-        if ( row > this.n || row < 0 || col > this.n || col < 0 )
-            throw new IllegalArgumentException()
-        sitesOpen[row][col] = true;
-        // TODO : ao abrir um site, precisa conectar a todos os sites adjacentes que estejam abertos 
+
+        if( row > this.n || row < 0 || col > this.n || col < 0 )
+            throw new IllegalArgumentException();
+        if( !isOpen(row, col) ) {
+            int linearIndex = toIndex(row, col);
+            sitesOpen[row][col] = true;
+            if(row == 0 || row == n-1) {
+                WQUF.union(linearIndex, topSite);
+            }
+            connectAround(row, col);
+            openSites++;
+        }
     }
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
-        if ( row > this.n || row < 0 || col > this.n || col < 0 )
-            throw new IllegalArgumentException()
+        if( row > this.n || row < 0 || col > this.n || col < 0 )
+            throw new IllegalArgumentException();
         return sitesOpen[row][col];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
-        if ( row > this.n || row < 0 || col > this.n || col < 0 )
-            throw new IllegalArgumentException()
-        return sitesFull[row][col];
+        if( row > this.n || row < 0 || col > this.n || col < 0 )
+            throw new IllegalArgumentException();
+        return WQUF.connected( toIndex(row, col), topSite );
     }
 
     // returns the number of open sites
     public int numberOfOpenSites() {
-        return WeightedQuickUnionUF.count(topSite); // TODO : Não deveria relacionar de alguma forma com o bottomSite?
+        return openSites;
     }
 
     // does the system percolate?
     public boolean percolates() {
-        return WeightedQuickUnionUF.connected(topSite, bottomSite);
+        return WQUF.connected(topSite, bottomSite);
     }
 
     // unit testing (required)
@@ -122,6 +132,16 @@ public class Percolation {
 
     }
 
+    private void connectAround(int row, int col) {
+
+        int[][] arround = {{row, col-1}, {row+1, col}, {row, col+1}, {row-1, col}};
+        for(int i = 0; i < 4; i++) {
+            if(arround[i][0] < n && arround[i][0] >= 0 && arround[i][1] < n && arround[i][1] >= 0 && isOpen(arround[i][0], arround[i][1]))
+            // Tudo isso pra dizer que eu vou conectar com o vizinho livre adjacente. TODO : refatorar isso.
+                WQUF.union( toIndex(row, col), toIndex(arround[i][0], arround[i][1]) );
+        }
+    }
+    
     // Makes the matrix indexes linear
     private int toIndex(int i, int j) {
         int newIndex = this.n*i + j;
