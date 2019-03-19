@@ -47,27 +47,40 @@ import edu.princeton.cs.algs4.Stopwatch;
 public class PercolationStats {
     
     private double[] allTrials;
+        // Array that stores the percolation treshold for each trial.
     private double sqrtTrials;
+        // The sqrt of the number of trials. Used to calculate the confidence
+        // interval.
     private int trials;
-    private int percolationIndex; // mudar esse nome.
+        // Number of Monte Carlo simulations to run in order to find the
+        // percolation Treshold.
+    private int numberOfOpenSites;
+        // Number of sites that were opened before the grid percolates.
     private double mean;
+        // Variable that keeps the mean of all values stores in allTrials.
     private double stdDev;
-    private double var;
+        // Variable that stores the Standart Deviation of the values stored in
+        // allTrials.
+    private double variance;
+        // Variable that stores the variance of the values stored in allTrials.
+
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
-        // precisa realizar os experimentos independentes tambem.
+
         this.allTrials = new double[trials];
         this.sqrtTrials = Math.sqrt(trials);
         this.trials = trials;
 
         for (int i = 0; i < this.trials; i++) {
-            percolationIndex = makeTrial(n);
-            this.allTrials[i] = (double)percolationIndex/(double)(n*n);
+            // Finds the number of OpenSites until the grid percolates
+            numberOfOpenSites = makeTrial(n);
+            this.allTrials[i] = (double)numberOfOpenSites/(double)(n*n);
         }
+
         this.mean = StdStats.mean(this.allTrials);
         this.stdDev = StdStats.stddev(this.allTrials);
-        this.var = StdStats.var(this.allTrials);
+        this.variance = StdStats.var(this.allTrials);
     }
 
     // sample standard deviation of percolation threshold
@@ -83,16 +96,15 @@ public class PercolationStats {
 
     // low endpoint of 95% confidence interval
     public double confidenceLow() {
-        return (this.mean - (1.96*this.var)/(this.sqrtTrials));
+        return (this.mean - (1.96*this.variance)/(this.sqrtTrials));
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHigh() {
-        return (this.mean + (1.96*this.var)/(this.sqrtTrials));
+        return (this.mean + (1.96*this.variance)/(this.sqrtTrials));
 
     }
 
-   // test client (see below)
    public static void main(String[] args) {
 
        Stopwatch timer = new Stopwatch();
