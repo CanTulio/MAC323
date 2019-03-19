@@ -41,13 +41,6 @@ import edu.princeton.cs.algs4.StdOut;
 
 import java.lang.IllegalArgumentException;
 
-// TODO : faz sentido eu usar o this para varias coisas? Isso não violaria
-// o encapsulamento? Eu acho que não por causa da palavra"private", vou conferir
-
-// TODO : entender a dinamica do EP. Eu vou receber uma matriz pronta, é isso?
-// TODO : quando tornar um quadrado "Full"?, ou seja, parte do caminho que em 
-// tese percola
-
 
 
 public class Percolation {
@@ -85,15 +78,18 @@ public class Percolation {
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
 
-        if( row > this.n || row < 0 || col > this.n || col < 0 )
-            throw new IllegalArgumentException();
+        validatePosition(row, col);
         if( !isOpen(row, col) ) {
+            
             int linearIndex = toIndex(row, col);
             sitesOpen[row][col] = true;
+
             if(row == 0 )
                 WQUF.union(linearIndex, topSite);
+
             if(row == n-1)
                 WQUF.union(linearIndex, bottomSite);
+
             connectAround(row, col);
             openSites++;
         }
@@ -101,25 +97,27 @@ public class Percolation {
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
-        if( row > this.n || row < 0 || col > this.n || col < 0 )
-            throw new IllegalArgumentException();
+
+        validatePosition(row, col);
         return sitesOpen[row][col];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
-        if( row > this.n || row < 0 || col > this.n || col < 0 )
-            throw new IllegalArgumentException();
+
+        validatePosition(row, col);
         return WQUF.connected( toIndex(row, col), topSite );
     }
 
     // returns the number of open sites
     public int numberOfOpenSites() {
+
         return openSites;
     }
 
     // does the system percolate?
     public boolean percolates() {
+
         return WQUF.connected(topSite, bottomSite);
     }
 
@@ -130,19 +128,34 @@ public class Percolation {
 
     private void connectAround(int row, int col) {
 
-        int[][] arround = {{row, col-1}, {row+1, col}, {row, col+1}, {row-1, col}};
+        int[][] arround = { {row, col-1},
+                            {row+1, col}, 
+                            {row, col+1}, 
+                            {row-1, col} };
+
         for(int i = 0; i < 4; i++) {
-            if(arround[i][0] < n && arround[i][0] >= 0 && arround[i][1] < n && arround[i][1] >= 0 && isOpen(arround[i][0], arround[i][1]))
-            // Tudo isso pra dizer que eu vou conectar com o vizinho livre adjacente. TODO : refatorar isso.
-                WQUF.union( toIndex(row, col), toIndex(arround[i][0], arround[i][1]) );
+
+            if( arround[i][0] < n &&
+                arround[i][0] >= 0 && 
+                arround[i][1] < n && 
+                arround[i][1] >= 0 && 
+                isOpen(arround[i][0], arround[i][1]) )
+                    WQUF.union( toIndex(row, col), toIndex(arround[i][0], arround[i][1]) );
         }
     }
 
     // Makes the matrix indexes linear
     private int toIndex(int i, int j) {
+
         int newIndex = this.n*i + j;
         return newIndex;
 
+    }
+
+    private void validatePosition(int row, int col) {
+
+        if( row > this.n || row < 0 || col > this.n || col < 0 )
+            throw new IllegalArgumentException();
     }
 
 }
