@@ -65,11 +65,11 @@ public class Percolation {
 
         if (n <= 0)
             throw new IllegalArgumentException();
-        WQUF = new WeightedQuickUnionUF(n*n);
+        WQUF = new WeightedQuickUnionUF(n*n+2); // permite armazenar o topsite e o bottomsite
         this.n = n;
         openSites = 0;
-        topSite = -1;
-        bottomSite = n;
+        topSite = n*n;
+        bottomSite = n*n+1;
         sitesOpen = new boolean[n][n];
 
         for(int i = 0; i < n; i++) {
@@ -77,11 +77,6 @@ public class Percolation {
                 sitesOpen[i][j] = false;
             }
         }
-
-        // for (int i = 0; i < n; i++){
-        //     WQUF.union(topSite, toIndex(i, 0));
-        //     WQUF.union(bottomSite, toIndex(n-1, i));
-        // }
 
 
     }
@@ -95,9 +90,10 @@ public class Percolation {
         if( !isOpen(row, col) ) {
             int linearIndex = toIndex(row, col);
             sitesOpen[row][col] = true;
-            if(row == 0 || row == n-1) {
+            if(row == 0 )
                 WQUF.union(linearIndex, topSite);
-            }
+            if(row == n-1)
+                WQUF.union(linearIndex, bottomSite);
             connectAround(row, col);
             openSites++;
         }
@@ -141,7 +137,7 @@ public class Percolation {
                 WQUF.union( toIndex(row, col), toIndex(arround[i][0], arround[i][1]) );
         }
     }
-    
+
     // Makes the matrix indexes linear
     private int toIndex(int i, int j) {
         int newIndex = this.n*i + j;
