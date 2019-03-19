@@ -61,7 +61,7 @@ public class PercolationStats {
         this.sqrtTrials = Math.sqrt(trials);
         this.trials = trials;
 
-        for (int i = 0; i < this.trials; i++) { // realiza T experimentos
+        for (int i = 0; i < this.trials; i++) {
             percolationIndex = makeTrial(n);
             this.allTrials[i] = (double)percolationIndex/(double)(n*n);
         }
