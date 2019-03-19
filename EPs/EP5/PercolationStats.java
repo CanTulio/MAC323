@@ -36,39 +36,92 @@
 
 ****************************************************************/
 
-import edu.princeton.cs.algs4.StdOut;
+import java.lang.Math;
 import java.lang.IllegalArgumentException;
 
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdStats;
+import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.Stopwatch;
+
 public class PercolationStats {
+    
+    private double[] allTrials;
+    private double sqrtTrials;
+    private int trials;
+    private int percolationIndex; // mudar esse nome.
+    private double mean;
+    private double stdDev;
+    private double var;
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
+        // precisa realizar os experimentos independentes tambem.
+        this.allTrials = new double[trials];
+        this.sqrtTrials = Math.sqrt(trials);
+        this.trials = trials;
 
-    }
-
-    // sample mean of percolation threshold
-    public double mean() {
-
+        for (int i = 0; i < this.trials; i++) { // realiza T experimentos
+            percolationIndex = makeTrial(n);
+            this.allTrials[i] = (double)percolationIndex/(double)(n*n);
+        }
+        this.mean = StdStats.mean(this.allTrials);
+        this.stdDev = StdStats.stddev(this.allTrials);
+        this.var = StdStats.var(this.allTrials);
     }
 
     // sample standard deviation of percolation threshold
     public double stddev() {
-
+        return this.stdDev;
     }
+
+    // sample mean of percolation threshold
+    public double mean() {
+        return this.mean;
+    }
+
 
     // low endpoint of 95% confidence interval
     public double confidenceLow() {
-
+        return (this.mean - (1.96*this.var)/(this.sqrtTrials));
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHigh() {
+        return (this.mean + (1.96*this.var)/(this.sqrtTrials));
 
     }
 
    // test client (see below)
    public static void main(String[] args) {
+
+       Stopwatch timer = new Stopwatch();
+       int n = Integer.parseInt(args[0]);
+       int t = Integer.parseInt(args[1]);
+
+       PercolationStats statsTest = new PercolationStats(n, t);
+       StdOut.println("mean() : " + statsTest.mean());
+       StdOut.println("stddev() : " + statsTest.stddev());
+       StdOut.println("confidenceLow() : " + statsTest.confidenceLow());
+       StdOut.println("confidenceHigh() : " + statsTest.confidenceHigh());
+       StdOut.println("Elapsed time : " + timer.elapsedTime());
        
    }
+    private int makeTrial(int n) {
+        Percolation currentTrial = new Percolation(n);
+        int randomRow, randomColumn;
+
+        while(!currentTrial.percolates()) {
+
+            randomRow = StdRandom.uniform(n);
+            randomColumn = StdRandom.uniform(n);
+            if( !currentTrial.isFull(randomRow, randomColumn)) {
+                currentTrial.open(randomRow, randomColumn);
+            }
+
+        }
+
+        return currentTrial.numberOfOpenSites();
+    }
 
 }
