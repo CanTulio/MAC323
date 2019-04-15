@@ -34,13 +34,15 @@ import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.Stdout;
+import java.lang.IllegalArgumentException;
 
 
+//TODO : precisa de testes.
 
 public class PointST<Value> {
 
-    // construct an empty symbol table of points 
     private RedBlackBST<Point2D, Value> ST;
+    // construct an empty symbol table of points 
     public PointST() {
         this.ST = new RedBlackBST<Point2D, Value>();
     }
@@ -57,16 +59,24 @@ public class PointST<Value> {
 
     // associate the value val with point p
     public void put(Point2D p, Value val) {
+        if (p == null || val == null)
+            throw new IllegalArgumentException();
         this.ST.put(p, val);
     }
 
     // value associated with point p 
     public Value get(Point2D p) {
+        if (p == null)
+            throw new IllegalArgumentException();
         return this.ST.get(p);
     }
 
     // does the symbol table contain point p? 
     public boolean contains(Point2D p) {
+       
+        if (p == null)
+            throw new IllegalArgumentException();
+
         return this.ST.contains(p);
     }
 
@@ -77,6 +87,9 @@ public class PointST<Value> {
 
     // all points that are inside the rectangle (or on the boundary) 
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null)
+            throw new IllegalArgumentException();
+
         Point2D min = new Point2D(rect.xmin(), rect.ymin());
         Point2D max = new Point2D(rect.xmax(), rect.ymax());
         return this.ST.keys(min, max); // TODO : não tenho ctz se isso funciona
@@ -84,6 +97,9 @@ public class PointST<Value> {
 
     // a nearest neighbor of point p; null if the symbol table is empty 
     public Point2D nearest(Point2D p) {
+
+        if (p == null)
+            throw new IllegalArgumentException();
         
         if (this.isEmpty())
             return null;
