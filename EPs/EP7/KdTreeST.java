@@ -32,7 +32,9 @@
 
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.Stdout;
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
 
 import java.lang.Math;
 
@@ -48,6 +50,16 @@ public class KdTreeST<Value> {
         private Node left;        // the left/bottom subtree
         private Node right;        // the right/top subtree
         private int level;      // stores the level the node is inserted in
+
+        public Node(Point2D p, Value value, RectHV rect, Node left, Node right, int level) {
+            
+            this.p = p;
+            this.value = value;
+            this.rect = rect;
+            this.left = left;
+            this.right = right;
+            this.level = level;
+        }
     }
 
     private int n;
@@ -73,28 +85,58 @@ public class KdTreeST<Value> {
     // TODO : que porra de retangulo eu coloco?
     // TODO : fazer deleção no caso de um put(NULL) 
 
+        if ( contains(p) ) { // atualiza o valor se o elemento já estiver na ST
+            Node content = get(p, this.head);
+            content.value = val;
+            return;
+        }
+
         Node current = this.head;
         int count;
-        for (count = 1; current != null; count++) {
+        Double xmin, ymin, xmax, ymax;
 
-            if ( isLevelEven(current.level) ) {
-                if ( p.y() >= current.p.y())
+        xmin = Double.NEGATIVE_INFINITY;
+        ymin = Double.NEGATIVE_INFINITY;
+
+        xmax = Double.POSITIVE_INFINITY;
+        ymax = Double.POSITIVE_INFINITY;
+
+        for (count = 1; current != null; count++) { // posso fazer a verificação
+        // do contains aqui.
+
+            if ( isLevelEven(current.level) ) { // vertical
+                
+                xmin = current.rect.xmin();
+                xmax = current.rect.xmax();  
+
+                if ( p.x() >= current.p.x()) { // filho direito
+                    ymin = current.p.y();
                     current = current.right;
-                else
+                }
+                else {
+                    ymax = current.p.y();
                     current = current.left;
-                     
+                }
             }
 
-            else {
-                if ( p.x() >= current.p.x() )
+            else { // horizontal
+
+                ymin = current.rect.ymin();
+                ymax = current.rect.ymax();
+
+                if ( p.y() >= current.p.y() ) {  // filho direito 
+                    xmin = current.p.x();
                     current = current.right;
-                else
+                }
+                else {
+                    xmax = current.p.x();
                     current = current.left;
+                }
             }
 
         }
-
-        current = new Node(p, val, ALGUMRETANGULO, null, null, count);
+        RectHV nodeRectangle = new RectHV(xmin, ymin, xmax, ymax);
+        current = new Node(p, val, nodeRectangle, null, null, count);
     }
 
     private boolean isLevelEven(int level) {
@@ -121,18 +163,18 @@ public class KdTreeST<Value> {
             return current;
 
         else {
-            if (isLevelEven(current)) {
-                if (p.y() < current.p.y())
+            if (isLevelEven(current.level)) {
+                if ( p.x() < current.p.x() )
                     return get(p, current.left);
                 else
-                    return get(p, current.rigth);
+                    return get(p, current.right);
             }
 
             else {
-                if (p.x() < current.p.x())
+                if ( p.y() < current.p.y() )
                     return get(p, current.left);
                 else
-                    return get(p, current.rigth);
+                    return get(p, current.right);
             }
         }
     }
@@ -143,15 +185,110 @@ public class KdTreeST<Value> {
     }
 
     // all points in the symbol table 
-    public Iterable<Point2D> points()
+    public Iterable<Point2D> points() {
+        
+        Queue <Point2D> myPoints = new Queue<Point2D> ();
+        Queue <Node> aux = new Queue<Node>();
+
+        Node current = this.head;
+
+        aux.enqueue(current);
+        myPoints.enqueue(current.p);
+
+        while( this.head != null && !aux.isEmpty()) {
+            
+            if (current.left != null) {
+                myPoints.enqueue(current.left.p);
+                aux.enqueue(current.left);
+            }
+
+            if (current.right != null) {
+                myPoints.enqueue(current.right.p);
+                aux.enqueue(current.right);
+            }
+
+            current = aux.dequeue();
+        }
+
+        return myPoints;
+    }
 
     // all points that are inside the rectangle (or on the boundary) 
-    public Iterable<Point2D> range(RectHV rect)
+    public Iterable<Point2D> range(RectHV rect) {
+
+        Stack<Point2D> insideRange = new Stack<Point2D>();
+        insideRange = range(rect, this.head);
+
+        return insideRange;
+    }
+
+    private Stack<Point2D> range(RectHV rect, Node start) {
+
+        Stack<Node> candidates = new Stack<Node> ();
+        Stack<Point2D> insideRange = new Stack<Point2D>();
+
+        Node current = start;
+        candidates.push(current);
+
+        // TODO : detalhe importante : a minha função empilha nós nulos, mas ela
+        // prontamente remove os nós nulos a baixo (algoritmo lazy)
+
+        while ( current != null ) { 
+           
+            if (rect.intersects(current.rect)) {
+                candidates.push(current.left); 
+                candidates.push(current.right);
+            }
+
+            else { // TODO : verificar se é refatoravel unir 1 com 2, algo assim.
+                if (isLevelEven(current.level)) { // verificacao do y, linha horizontal
+                    if (rect.xmin() < current.p.x()) { //1
+                        candidates.push(current.left);
+                    }
+
+                    else {
+                        candidates.push(current.right);
+                    }
+                }
+
+                else { // verificação do x, linha vertical
+                    if (rect.ymin() < current.p.y()) { // 2
+                        candidates.push(current.left);
+                    }
+
+                    else {
+                        candidates.push(current.right);
+                    }
+                }
+            }
+
+            if (rect.contains(current.p))
+                insideRange.push(current.p);
+
+            while (candidates.size() > 1 && candidates.peek() == null ) // esse length serve pra deixar pelo menos um nulo, caso só insira caras nulos. Dai o loop vai acabar. isso é meio gambiarra. TODO : remover isso.
+                candidates.pop();
+              
+            current = candidates.pop();
+        }
+
+        return insideRange;
+        // if ( rect.contains(start.p) ) {
+
+        // }
+        // if ( rect.intersects(start.rect) ) {
+        //     range(rect, start.left);
+        //     range(rect, start.right);
+        // }
+    }
 
     // a nearest neighbor of point p; null if the symbol table is empty 
-    public Point2D nearest(Point2D p)
+    public Point2D nearest(Point2D p) {
+        return null;
+    }
 
     // unit testing (required)
-    public static void main(String[] args)
+    public static void main(String[] args) {
+
+    }
 
 }
