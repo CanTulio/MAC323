@@ -85,6 +85,9 @@ public class KdTreeST<Value> {
     // TODO : que porra de retangulo eu coloco?
     // TODO : fazer deleção no caso de um put(NULL) 
 
+        boolean right = false;
+        boolean left = false;
+
         if ( contains(p) ) { // atualiza o valor se o elemento já estiver na ST
             Node content = get(p, this.head);
             content.value = val;
@@ -101,42 +104,62 @@ public class KdTreeST<Value> {
         xmax = Double.POSITIVE_INFINITY;
         ymax = Double.POSITIVE_INFINITY;
 
-        for (count = 1; current != null; count++) { // posso fazer a verificação
+        for (count = 1; !left && !right && this.head != null; count++) { // posso fazer a verificação
         // do contains aqui.
 
             if ( isLevelEven(current.level) ) { // vertical
                 
-                xmin = current.rect.xmin();
-                xmax = current.rect.xmax();  
+                ymin = current.rect.ymin();
+                ymax = current.rect.ymax();  
 
                 if ( p.x() >= current.p.x()) { // filho direito
-                    ymin = current.p.y();
-                    current = current.right;
+                    xmin = current.p.x();
+                    if (current.right != null)
+                        current = current.right;
+                    else
+                        right = true; // sera inserido a direita do atual
                 }
                 else {
-                    ymax = current.p.y();
-                    current = current.left;
+                    xmax = current.p.x();
+                    if (current.left != null)
+                        current = current.left;
+                    else 
+                        left = true;
                 }
             }
 
             else { // horizontal
 
-                ymin = current.rect.ymin();
-                ymax = current.rect.ymax();
+                xmin = current.rect.xmin();
+                xmax = current.rect.xmax();
 
                 if ( p.y() >= current.p.y() ) {  // filho direito 
-                    xmin = current.p.x();
-                    current = current.right;
+                    ymin = current.p.y();
+                    if (current.right != null)
+                        current = current.right;
+                    else
+                        right = true;
                 }
                 else {
-                    xmax = current.p.x();
-                    current = current.left;
+                    ymax = current.p.y();
+                    if (current.left != null)
+                        current = current.left;
+                    else
+                        left = true;
                 }
             }
 
         }
         RectHV nodeRectangle = new RectHV(xmin, ymin, xmax, ymax);
-        current = new Node(p, val, nodeRectangle, null, null, count);
+        
+        Node newNode = new Node(p, val, nodeRectangle, null, null, count);
+        
+        if (this.head == null)
+            this.head = newNode;
+        if (left)
+            current.left = newNode;
+        if (right)
+            current.right = newNode;
     }
 
     private boolean isLevelEven(int level) {
@@ -151,7 +174,10 @@ public class KdTreeST<Value> {
     public Value get(Point2D p) {
         
         Node result = get(p, this.head);
-        return result.value;
+        if(result != null)
+            return result.value;
+        else
+            return null;
     }
 
     private Node get(Point2D p, Node current) {
@@ -181,7 +207,7 @@ public class KdTreeST<Value> {
 
     // does the symbol table contain point p? 
     public boolean contains(Point2D p) {
-        return this.get(p) != null;
+        return get(p) != null;
     }
 
     // all points in the symbol table 
@@ -233,8 +259,10 @@ public class KdTreeST<Value> {
         // TODO : detalhe importante : a minha função empilha nós nulos, mas ela
         // prontamente remove os nós nulos a baixo (algoritmo lazy)
 
+        // TODO : achoq ue da pra fazer melhor : se intersectar, otimo. Se o 
+        // retangulo de busca nao intersectar com o cara, ja pode descartar
         while ( current != null ) { 
-           
+
             if (rect.intersects(current.rect)) {
                 candidates.push(current.left); 
                 candidates.push(current.right);
@@ -262,6 +290,12 @@ public class KdTreeST<Value> {
                 }
             }
 
+            // for (Node bla : candidates) {
+            //     if (bla == null)
+            //         StdOut.println("Null");
+            //     else
+            //         StdOut.println(bla.p);
+            // }
             if (rect.contains(current.p))
                 insideRange.push(current.p);
 
@@ -272,19 +306,67 @@ public class KdTreeST<Value> {
         }
 
         return insideRange;
-        // if ( rect.contains(start.p) ) {
-
-        // }
-        // if ( rect.intersects(start.rect) ) {
-        //     range(rect, start.left);
-        //     range(rect, start.right);
-        // }
     }
 
     // a nearest neighbor of point p; null if the symbol table is empty 
     public Point2D nearest(Point2D p) {
-        return null;
+        Point2D nearestPoint = nearest(p, this.head, null);
+        return nearestPoint;
+        
     }
+
+    private Point2D nearest(Point2D p, Node current, Point2D closer) {
+        if (current != null) {
+
+            if (closer == null){
+                closer = current.p;
+            }
+
+            if (closer.distanceTo(p) >= current.rect.distanceTo(p)){
+
+                if (current.p.distanceTo(p) < closer.distanceTo(p))
+                    closer = current.p;
+
+                if (current.left != null && current.left.rect.contains(p)) {
+                    closer = nearest(p, current.left , closer);
+                    closer = nearest(p, current.right, closer);
+                }
+
+                else {
+                    closer = nearest(p, current.right, closer);
+                    closer = nearest(p, current.left, closer);
+                }
+
+            }
+        }
+        return closer;
+
+    }
+
+    // private boolean onSameQuadrant (Node p, Node child, Point2D target) {
+        
+    //     if (child == null)
+    //         return false;
+
+    //     if (IsLeftChild(p,child.p) && IsLeftChild(p, target) || IsRightChild(p, child.p) && IsRightChild(p, target))
+    //         return true;
+    //     else
+    //         return false;
+    // }
+
+    // private boolean IsRightChild (Node p, Point2D child) {
+    //     if (isLevelEven(p.level))
+    //         return child.x() > p.p.x();
+    //     else
+    //         return child.y() > p.p.y();
+    // }
+
+    // private boolean IsLeftChild (Node p, Point2D child) {
+    //     if (isLevelEven(p.level))
+    //         return child.x() < p.p.x();
+    //     else
+    //         return child.y() < p.p.y();
+    // }
 
     // unit testing (required)
     public static void main(String[] args) {
@@ -292,3 +374,4 @@ public class KdTreeST<Value> {
     }
 
 }
+
