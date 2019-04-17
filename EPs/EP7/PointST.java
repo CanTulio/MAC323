@@ -33,8 +33,9 @@
 import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.Stdout;
+import edu.princeton.cs.algs4.StdOut;
 import java.lang.IllegalArgumentException;
+import edu.princeton.cs.algs4.Queue;
 
 
 //TODO : precisa de testes.
@@ -90,9 +91,21 @@ public class PointST<Value> {
         if (rect == null)
             throw new IllegalArgumentException();
 
-        Point2D min = new Point2D(rect.xmin(), rect.ymin());
-        Point2D max = new Point2D(rect.xmax(), rect.ymax());
-        return this.ST.keys(min, max); // TODO : não tenho ctz se isso funciona
+        // Point2D min = new Point2D(rect.xmin(), rect.ymin());
+        // Point2D max = new Point2D(rect.xmax(), rect.ymax());
+        // return this.ST.keys(min, max); // TODO : não tenho ctz se isso funciona
+
+        Iterable<Point2D> points = points();
+        Queue<Point2D> insideRange = new Queue<Point2D> ();
+        
+        for (Point2D point : points) {
+            
+            if(rect.contains(point))
+                insideRange.enqueue(point);
+
+        }
+
+        return insideRange;
     }
 
     // a nearest neighbor of point p; null if the symbol table is empty 
@@ -104,21 +117,21 @@ public class PointST<Value> {
         if (this.isEmpty())
             return null;
 
-        Iterable<Point2D> allKeys = this.points();
-        double dist = 0;
+        Iterable<Point2D> allKeys = points();
+        double dist = Double.POSITIVE_INFINITY;
         double currentDistance;
         Point2D candidate = p; // TODO : sem essa inicialização, o cara chia.
 
         for (Point2D key : allKeys) {
 
-            currentDistance = key.distanceSquaredTo(p);
+            currentDistance = key.distanceTo(p);
 
-            if (currentDistance >= dist) { // TODO : e esse maior igual?
+            if (currentDistance < dist) { // TODO : e esse maior igual?
                 dist = currentDistance;
                 candidate = key;
             }
         }
-
+        // StdOut.println("Cara selecionado : " + candidate);
         return candidate;
     }
 
