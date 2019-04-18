@@ -35,6 +35,7 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.Stack;
+import java.lang.IllegalArgumentException;
 
 import java.lang.Math;
 
@@ -67,7 +68,7 @@ public class KdTreeST<Value> {
 
     public KdTreeST() {
         this.n = 0;
-        this.head = null; // necessario?
+        this.head = null; 
     }
 
     // is the symbol table empty? 
@@ -81,9 +82,7 @@ public class KdTreeST<Value> {
     }
 
     // associate the value val with point p
-    public void put(Point2D p, Value val) { //TODO : altamente refatorável
-    // TODO : que porra de retangulo eu coloco?
-    // TODO : fazer deleção no caso de um put(NULL) 
+    public void put(Point2D p, Value val) { 
 
         boolean right = false;
         boolean left = false;
@@ -104,13 +103,12 @@ public class KdTreeST<Value> {
         xmax = Double.POSITIVE_INFINITY;
         ymax = Double.POSITIVE_INFINITY;
 
-        for (count = 1; !left && !right && this.head != null; count++) { // posso fazer a verificação
-        // do contains aqui.
+        for (count = 1; !left && !right && this.head != null; count++) { 
 
-            if ( isLevelEven(current.level) ) { // vertical
+            if ( isLevelEven(current.level) ) { // Elemento é do tipo vertical
                 
-                ymin = current.rect.ymin();
-                ymax = current.rect.ymax();  
+                ymin = current.rect.ymin(); // herda xmin e ymax do pai,
+                ymax = current.rect.ymax(); // atualiza o resto baseado no pai. 
 
                 if ( p.x() >= current.p.x()) { // filho direito
                     xmin = current.p.x();
@@ -133,7 +131,7 @@ public class KdTreeST<Value> {
                 xmin = current.rect.xmin();
                 xmax = current.rect.xmax();
 
-                if ( p.y() >= current.p.y() ) {  // filho direito 
+                if ( p.y() >= current.p.y() ) {  
                     ymin = current.p.y();
                     if (current.right != null)
                         current = current.right;
@@ -163,16 +161,21 @@ public class KdTreeST<Value> {
     }
 
     private boolean isLevelEven(int level) {
+
         return Math.floor(log2(level)) % 2 == 0;
     }
 
     private double log2(int n) {
+
         return (Math.log(n) / Math.log(2));
     }
 
     // value associated with point p 
     public Value get(Point2D p) {
         
+        if (p == null)
+            throw new IllegalArgumentException();
+
         Node result = get(p, this.head);
         if(result != null)
             return result.value;
@@ -207,6 +210,8 @@ public class KdTreeST<Value> {
 
     // does the symbol table contain point p? 
     public boolean contains(Point2D p) {
+        if (p == null)
+            throw new IllegalArgumentException();
         return get(p) != null;
     }
 
@@ -242,6 +247,10 @@ public class KdTreeST<Value> {
     // all points that are inside the rectangle (or on the boundary) 
     public Iterable<Point2D> range(RectHV rect) {
 
+        if (rect == null)
+            throw new IllegalArgumentException();
+
+
         Stack<Point2D> insideRange = new Stack<Point2D>();
         insideRange = range(rect, this.head);
 
@@ -256,11 +265,6 @@ public class KdTreeST<Value> {
         Node current = start;
         candidates.push(current);
 
-        // TODO : detalhe importante : a minha função empilha nós nulos, mas ela
-        // prontamente remove os nós nulos a baixo (algoritmo lazy)
-
-        // TODO : achoq ue da pra fazer melhor : se intersectar, otimo. Se o 
-        // retangulo de busca nao intersectar com o cara, ja pode descartar
         while ( current != null ) { 
 
             if (rect.intersects(current.rect)) {
@@ -268,9 +272,9 @@ public class KdTreeST<Value> {
                 candidates.push(current.right);
             }
 
-            else { // TODO : verificar se é refatoravel unir 1 com 2, algo assim.
+            else { 
                 if (isLevelEven(current.level)) { // verificacao do y, linha horizontal
-                    if (rect.xmin() < current.p.x()) { //1
+                    if (rect.xmin() < current.p.x()) { 
                         candidates.push(current.left);
                     }
 
@@ -280,7 +284,7 @@ public class KdTreeST<Value> {
                 }
 
                 else { // verificação do x, linha vertical
-                    if (rect.ymin() < current.p.y()) { // 2
+                    if (rect.ymin() < current.p.y()) {
                         candidates.push(current.left);
                     }
 
@@ -290,19 +294,16 @@ public class KdTreeST<Value> {
                 }
             }
 
-            // for (Node bla : candidates) {
-            //     if (bla == null)
-            //         StdOut.println("Null");
-            //     else
-            //         StdOut.println(bla.p);
-            // }
             if (rect.contains(current.p))
                 insideRange.push(current.p);
 
-            while (candidates.size() > 1 && candidates.peek() == null ) // esse length serve pra deixar pelo menos um nulo, caso só insira caras nulos. Dai o loop vai acabar. isso é meio gambiarra. TODO : remover isso.
+            while (candidates.size() > 1 && candidates.peek() == null ) 
                 candidates.pop();
               
-            current = candidates.pop();
+            current = candidates.pop(); // caso so exista um candidato na pilha
+            // e seja um nulo, acaba o loop.
+            // sempre vai existir pelo menos um null na pilha pois se empilha
+            // os filhos de um nó, e haverão nós com filhos nulos
         }
 
         return insideRange;
@@ -310,6 +311,10 @@ public class KdTreeST<Value> {
 
     // a nearest neighbor of point p; null if the symbol table is empty 
     public Point2D nearest(Point2D p) {
+
+        if (p == null)
+            throw new IllegalArgumentException();
+
         Point2D nearestPoint = nearest(p, this.head, null);
         return nearestPoint;
         
@@ -342,31 +347,6 @@ public class KdTreeST<Value> {
         return closer;
 
     }
-
-    // private boolean onSameQuadrant (Node p, Node child, Point2D target) {
-        
-    //     if (child == null)
-    //         return false;
-
-    //     if (IsLeftChild(p,child.p) && IsLeftChild(p, target) || IsRightChild(p, child.p) && IsRightChild(p, target))
-    //         return true;
-    //     else
-    //         return false;
-    // }
-
-    // private boolean IsRightChild (Node p, Point2D child) {
-    //     if (isLevelEven(p.level))
-    //         return child.x() > p.p.x();
-    //     else
-    //         return child.y() > p.p.y();
-    // }
-
-    // private boolean IsLeftChild (Node p, Point2D child) {
-    //     if (isLevelEven(p.level))
-    //         return child.x() < p.p.x();
-    //     else
-    //         return child.y() < p.p.y();
-    // }
 
     // unit testing (required)
     public static void main(String[] args) {

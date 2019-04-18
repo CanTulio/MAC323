@@ -38,11 +38,11 @@ import java.lang.IllegalArgumentException;
 import edu.princeton.cs.algs4.Queue;
 
 
-//TODO : precisa de testes.
 
 public class PointST<Value> {
 
     private RedBlackBST<Point2D, Value> ST;
+
     // construct an empty symbol table of points 
     public PointST() {
         this.ST = new RedBlackBST<Point2D, Value>();
@@ -88,12 +88,9 @@ public class PointST<Value> {
 
     // all points that are inside the rectangle (or on the boundary) 
     public Iterable<Point2D> range(RectHV rect) {
+        
         if (rect == null)
             throw new IllegalArgumentException();
-
-        // Point2D min = new Point2D(rect.xmin(), rect.ymin());
-        // Point2D max = new Point2D(rect.xmax(), rect.ymax());
-        // return this.ST.keys(min, max); // TODO : não tenho ctz se isso funciona
 
         Iterable<Point2D> points = points();
         Queue<Point2D> insideRange = new Queue<Point2D> ();
@@ -109,6 +106,7 @@ public class PointST<Value> {
     }
 
     // a nearest neighbor of point p; null if the symbol table is empty 
+
     public Point2D nearest(Point2D p) {
 
         if (p == null)
@@ -120,18 +118,18 @@ public class PointST<Value> {
         Iterable<Point2D> allKeys = points();
         double dist = Double.POSITIVE_INFINITY;
         double currentDistance;
-        Point2D candidate = p; // TODO : sem essa inicialização, o cara chia.
+        Point2D candidate = p; // inicialização feita para o compilador não acusar
+        // possivel caso no qual a variavel não é inicializada
 
         for (Point2D key : allKeys) {
 
             currentDistance = key.distanceTo(p);
 
-            if (currentDistance < dist) { // TODO : e esse maior igual?
+            if (currentDistance < dist) { 
                 dist = currentDistance;
                 candidate = key;
             }
         }
-        // StdOut.println("Cara selecionado : " + candidate);
         return candidate;
     }
 
