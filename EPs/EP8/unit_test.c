@@ -35,7 +35,6 @@
 #define OPERACOES   "    " SIZE_ST ", " MIN_ST ", " MAX_ST ", " DELMIN_ST ", " DELMAX_ST ", " MOSTRE_ST ", " KEYS_ST "\n"\
                     "    " GET_ST " <key>, " RANK_ST " <key>, " DELETE_ST " <key>" "\n" 
 
-*/
 /*---------------------------------------------------------------*/
 /*
  *  P R O T Ã“ T I P O S
