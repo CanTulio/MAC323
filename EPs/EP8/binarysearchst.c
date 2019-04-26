@@ -38,7 +38,14 @@
  * implementaÃ§Ã£o com vetores ordenados
  */
 struct binarySearchST {
-    char variavelParaEsqueletoCompilarSemErro;
+    
+    int n; /* guarda o tamanho */
+    int m; /* guarda quantas chaves eu tenho */
+    void **keys;
+    void **values;
+    int (*compar)();
+    /* size_t *size_keys; */
+    size_t *size_values; /* guarda quantos valores tem em cada chave.*/
 };
 
 /*-----------------------------------------------------------*/
@@ -60,9 +67,16 @@ struct binarySearchST {
  */
 BinarySearchST
 initST(int (*compar)(const void *key1, const void *key2))  {
-
-
-    return NULL;
+    
+    BinarySearchST ST;
+    ST = malloc(sizeof(struct binarySearchST));
+    ST-> n = 1000; /*TODO : ver isso*/
+    ST->compar = compar;
+    ST->keys = malloc(ST->n * sizeof(void *));
+    ST->values = malloc(ST->n * sizeof(void *));
+    ST->size_values = calloc(ST->n, sizeof(size_t));
+    ST->m = 0;
+    return ST;
 }
 
 /*-----------------------------------------------------------*/
@@ -73,9 +87,22 @@ initST(int (*compar)(const void *key1, const void *key2))  {
  *  utilizada por ST.
  *
  */
-void  
-freeST(BinarySearchST st)
-{
+void freeST(BinarySearchST st) {
+    
+    int i;
+
+    for (i = 0; i < st->n; i++) {
+        free(st->keys[i]);
+        free(st->values[i]);
+    }
+
+    free(st->keys);
+    free(st->values);
+    free(st->size_values);
+    /*free(st->compar);*/
+    /* free(st->n); just in case */
+    /*free(st->m);  just in case */
+    free(st);
 }    
 
 /*------------------------------------------------------------*/
@@ -102,9 +129,28 @@ freeST(BinarySearchST st)
  *  Para criar uma copia/clode de VAL Ã© usado o seu nÃºmero de bytes NVAL.
  *
  */
-void  
-put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_t nVal)
-{
+void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_t nVal) {
+
+    int i;
+    int found; found = 0; /* não sei se da merda aqui*/
+    for (i = 0; i < st->m && found == 0; i++) {
+        if (st->compar(st->keys[i], key) == 0) { /* achou! */
+            /* aqui vai a porra do memory copy*/
+            st->size_values[i]++; /* talvez fazer resize? */
+            found = 1;
+        }
+    }
+
+    if (found == 0) {
+        st->keys[st->m] = malloc(nKey);
+        memcpy(st->keys[st->m], key, nKey);
+
+         /* st->keys[st->m] = key; aqui tem que ser memcopy*/
+        st->values[st->m] = malloc(nVal);
+        memcpy(st->values[st->m], val, nVal);
+        /*st->values[st->m] = val;*/
+        st->m++;
+    }
 }    
 
 /*-----------------------------------------------------------*/
@@ -120,7 +166,7 @@ put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_t nVa
  * 
  */
 void *
-get(BinarySearchST st, const void *key)
+get(BinarySearchST st, const void *key) /* Aqui vai ter uma busca binaria*/
 {
     return NULL;
 }
@@ -167,7 +213,7 @@ delete(BinarySearchST st, const void *key)
 int
 size(BinarySearchST st)
 {
-    return 0;
+    return st->m;
 }
 
 /*-----------------------------------------------------------*/
@@ -182,7 +228,7 @@ size(BinarySearchST st)
 Bool
 isEmpty(BinarySearchST st)
 {
-    return TRUE;
+    return st->n == 0;
 }
 
 
