@@ -41,11 +41,13 @@ struct binarySearchST {
     
     int n; /* guarda o tamanho */
     int m; /* guarda quantas chaves eu tenho */
+    int current; /* util pro "iterador"*/
     void **keys;
     void **values;
     int (*compar)();
     /* size_t *size_keys; */
     size_t *size_values; /* guarda quantos valores tem em cada chave.*/
+    
 };
 
 /*-----------------------------------------------------------*/
@@ -70,12 +72,16 @@ initST(int (*compar)(const void *key1, const void *key2))  {
     
     BinarySearchST ST;
     ST = malloc(sizeof(struct binarySearchST));
+
     ST-> n = 1000; /*TODO : ver isso*/
-    ST->compar = compar;
+    ST->m = 0;
+    ST->current = 0;
+
     ST->keys = malloc(ST->n * sizeof(void *));
     ST->values = malloc(ST->n * sizeof(void *));
     ST->size_values = calloc(ST->n, sizeof(size_t));
-    ST->m = 0;
+    
+    ST->compar = compar;
     return ST;
 }
 
@@ -130,13 +136,12 @@ void freeST(BinarySearchST st) {
  *
  */
 void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_t nVal) {
-
+    /* TODO : A inserção tem que ser ordenada
     int i;
-    int found; found = 0; /* não sei se da merda aqui*/
+    int found; found = 0;
     for (i = 0; i < st->m && found == 0; i++) {
-        if (st->compar(st->keys[i], key) == 0) { /* achou! */
-            /* aqui vai a porra do memory copy*/
-            st->size_values[i]++; /* talvez fazer resize? */
+        if (st->compar(st->keys[i], key) == 0) { 
+            st->size_values[i]++;
             found = 1;
         }
     }
@@ -145,12 +150,41 @@ void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_
         st->keys[st->m] = malloc(nKey);
         memcpy(st->keys[st->m], key, nKey);
 
-         /* st->keys[st->m] = key; aqui tem que ser memcopy*/
         st->values[st->m] = malloc(nVal);
         memcpy(st->values[st->m], val, nVal);
-        /*st->values[st->m] = val;*/
+
         st->m++;
     }
+    */ 
+        int i, j, index; /* TODO : pensar em nomes melhores */
+        if (val == NULL) {
+            delete(st, key);
+            return;
+        }
+
+        i = rank(st, key);
+
+        /* key is already in table*/
+        if (i < st->m && st->compar(st->keys[i], key) == 0) {
+
+            index = st->size_values[i];
+            memcpy(st->values[index], key, nVal);
+            return;
+        }
+
+        /* insert new key-value pair*/
+        /*if (n == keys.length) resize(2*keys.length); resize? */
+
+        for (j = st->m-1; j > i; j--)  { /* checar se j cmeça com j-1*/
+            st->keys[j] = st->keys[j-1];
+            st->values[j] = st->values[j-1];
+        }
+        memcpy(st->keys[i], key, nKey);
+        memcpy(st->values[i], val, nVal);
+        st->m++;
+        st->size_values[i]++;
+
+
 }    
 
 /*-----------------------------------------------------------*/
@@ -165,9 +199,17 @@ void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_
  *       associado a KEY.
  * 
  */
-void *
-get(BinarySearchST st, const void *key) /* Aqui vai ter uma busca binaria*/
-{
+void *get(BinarySearchST st, const void *key) {
+
+    int i;    
+    if (isEmpty(st))
+        return NULL;
+    
+    i = rank(st, key); 
+
+    if (i < st->m-1 && st->compar(st->keys[i], key) == 0) 
+        return st->values[i];
+
     return NULL;
 }
 
@@ -181,9 +223,12 @@ get(BinarySearchST st, const void *key) /* Aqui vai ter uma busca binaria*/
  *
  */
 Bool
-contains(BinarySearchST st, const void *key)
-{
-    return FALSE;
+contains(BinarySearchST st, const void *key) {
+    
+    if (get(st, key) == NULL)
+        return FALSE;
+    else
+        return TRUE;
 }
 
 /*-----------------------------------------------------------*/
@@ -197,8 +242,32 @@ contains(BinarySearchST st, const void *key)
  *
  */
 void
-delete(BinarySearchST st, const void *key)
-{
+delete(BinarySearchST st, const void *key) {
+    
+    int i, j;
+    if (!isEmpty(st)){
+        /* compute rank*/
+        i = rank(st, key);
+
+        /* key not in table*/
+        if (i == st->m || st->compar(st->keys[i], key)!= 0) {
+            return;
+        }
+        for (j = i; j < st->m-1; j++)  { /* TODO : aqui eu uso j < st->m-1?*/
+            st->keys[j] = st->keys[j+1];
+            st->values[j] = st->values[j+1];
+        }
+
+        free(st->keys[st->m-1]);
+        free(st->values[st->m-1]);
+        st->m--;
+
+        /* resize if 1/4 full*/
+        /*if (n > 0 && n == keyslength/4) resize(keyasdslength/2);*/
+
+    }
+
+
 }
 
 /*-----------------------------------------------------------*/
@@ -249,9 +318,19 @@ isEmpty(BinarySearchST st)
  *
  */
 void *
-min(BinarySearchST st)
-{
-    return NULL;
+min(BinarySearchST st) {
+    if (isEmpty(st))
+        return NULL;
+
+    else {
+        void* cpy;
+        size_t sze_data = sizeof(st->values[0]);
+
+        cpy = malloc(sze_data);
+        memcpy(cpy, st->values[0], sze_data);
+
+        return cpy;
+    }
 }
 
 /*-----------------------------------------------------------*/
@@ -267,7 +346,17 @@ min(BinarySearchST st)
 void *
 max(BinarySearchST st)
 {
-    return NULL;
+    if (isEmpty(st))
+        return NULL;
+    else {
+        void* cpy;
+        size_t sze_data = sizeof(st->values[st->m-1]);
+
+        cpy = malloc(sze_data);
+        memcpy(cpy, st->values[st->m-1], sze_data);
+        
+        return cpy;
+    }
 }
 
 /*-----------------------------------------------------------*/
@@ -281,10 +370,27 @@ max(BinarySearchST st)
  *
  */
 int
-rank(BinarySearchST st, const void *key)
-{
-    return 0;
-} 
+rank(BinarySearchST st, const void *key) {
+    int lo = 0, hi = st->m-1; 
+    while (lo <= hi) { 
+
+        int mid = lo + (hi - lo) / 2; 
+        int cmp = st->compar(st->keys[mid], key);
+        
+        if (cmp < 0) 
+            hi = mid - 1; 
+
+        else if (cmp > 0) 
+            lo = mid + 1; 
+
+        else 
+            return mid; 
+
+    }
+    if (isEmpty(st))
+        return -1; /*TODO e nesse caso o que retorna? */
+    return lo;
+}
 
 /*-----------------------------------------------------------*/
 /*
@@ -297,9 +403,11 @@ rank(BinarySearchST st, const void *key)
  *
  */
 void *
-select(BinarySearchST st, int k)
-{
-    return NULL;
+select(BinarySearchST st, int k) {
+    if (k+1 < st->m)
+        return st->keys[k+1];
+    else
+        return NULL;
 }
 
 /*-----------------------------------------------------------*/
@@ -313,8 +421,11 @@ select(BinarySearchST st, int k)
  *
  */
 void
-deleteMin(BinarySearchST st)
-{
+deleteMin(BinarySearchST st) {
+    if (!isEmpty(st)) {
+        delete(st, st->values[0]);
+    }
+        
 }
 
 /*-----------------------------------------------------------*/
@@ -328,8 +439,10 @@ deleteMin(BinarySearchST st)
  *
  */
 void
-deleteMax(BinarySearchST st)
-{
+deleteMax(BinarySearchST st){
+    if (!isEmpty(st)){
+        delete(st, st->values[st->m-1]);
+    }
 }
 
 /*-----------------------------------------------------------*/
@@ -349,7 +462,23 @@ deleteMax(BinarySearchST st)
 void * 
 keys(BinarySearchST st, Bool init)
 {
-    return NULL;
+    void* cpy;
+    size_t size_data = sizeof(st->keys[0]);
+
+    cpy = malloc(size_data);
+
+    if (st->current + 1 >= st-> m) {
+        return NULL;
+    }
+    if (init == TRUE) {
+        memcpy(cpy, st->keys[0], size_data);
+    }
+
+    else {
+        memcpy(cpy, st->keys[++st->current], size_data);
+    }
+
+    return cpy;
 }
 
 /*-----------------------------------------------------------*/
