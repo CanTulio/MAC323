@@ -1,3 +1,36 @@
+/****************************************************************
+    Nome: Caio Túlio de Deus Andrade
+    NUSP: 9797232
+
+    Ao preencher esse cabeçalho com o meu nome e o meu número USP,
+    declaro que todas as partes originais desse exercício programa (EP)
+    foram desenvolvidas e implementadas por mim e que portanto não 
+    constituem desonestidade acadêmica ou plágio.
+    Declaro também que sou responsável por todas as cópias desse
+    programa e que não distribui ou facilitei a sua distribuição.
+    Estou ciente que os casos de plágio e desonestidade acadêmica
+    serão tratados segundo os critérios divulgados na página da 
+    disciplina.
+    Entendo que EPs sem assinatura devem receber nota zero e, ainda
+    assim, poderão ser punidos por desonestidade acadêmica.
+
+    Abaixo descreva qualquer ajuda que você recebeu para fazer este
+    EP.  Inclua qualquer ajuda recebida por pessoas (inclusive
+    monitoras e colegas). Com exceção de material de MAC0323, caso
+    você tenha utilizado alguma informação, trecho de código,...
+    indique esse fato abaixo para que o seu programa não seja
+    considerado plágio ou irregular.
+
+    Descrição de ajuda ou indicação de fonte:
+
+
+
+    Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
+
+****************************************************************/
+
+
+
 /*
  * MAC0323 Estruturas de Dados e Algoritmo II
  * 
@@ -22,9 +55,7 @@
 #include <stdio.h>   /* printf(): para debug */
 #endif
 
-/* TODO : MAJOR FUCKUP : tava usando o numero de valores pra iterar sobre
-o numero de CHAVES, SÃO COISAS MUITO DIFERENTES E TENHO QUE ARMAZENAR OS DOIS
-SOMEHOW*/
+
 
 /*
  * CONSTANTES 
@@ -78,7 +109,7 @@ initST(int (*compar)(const void *key1, const void *key2))  {
     BinarySearchST ST;
     ST = malloc(sizeof(struct binarySearchST));
 
-    ST->n = 1; /*TODO : ver isso*/
+    ST->n = 1;
     ST->n_keys = 0;
     ST->current = 0;
 
@@ -140,7 +171,7 @@ void freeST(BinarySearchST st) {
 void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_t nVal) {
 
 
-        int i, j; /* TODO : pensar em nomes melhores */
+        int i, j;
         if (val == NULL) {
             delete(st, key);
             return;
@@ -184,7 +215,7 @@ void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_
         st->values[i] = malloc(nVal);
         memcpy(st->values[i], val, nVal);
 
-        st->size_values[i] = nVal; /*TODO ver esse i*/
+        st->size_values[i] = nVal;
         st->n_keys++;
 
 }    
@@ -203,13 +234,15 @@ void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_
  */
 void *get(BinarySearchST st, const void *key) {
 
-    int i;    
-    if (isEmpty(st))
-        return NULL;
+    int i;
+    void* cpy;  
     i = rank(st, key); 
     if (i < st->n_keys && st->compar(st->keys[i], key) == 0) {
-        return st->values[i];
+        cpy = malloc(st->size_values[i]);
+        memcpy(cpy, st->values[i], st->size_values[i]);
+        return cpy;
     } 
+
     return NULL;
 }
 
@@ -245,27 +278,29 @@ void
 delete(BinarySearchST st, const void *key) {
     
     int i, j;
-    if (!isEmpty(st)){
+    if (!isEmpty(st) && contains(st, key) == TRUE){
+        printf("Nao ta vazio!\n");
         /* compute rank*/
         i = rank(st, key);
+        printf("Vou deletar %s\n", (String)st->keys[i]);
 
         /* key not in table*/
         if (i == st->n_keys || st->compar(st->keys[i], key)!= 0) {
             return;
         }
-        for (j = i; j < st->n_keys-1; j++)  {
-            
+        
+
+        for (j = i; j < st->n_keys-1; j++)  {            
+
             free(st->keys[j]);
-            st->keys[j] = malloc(st->size_values[j-1]);
-            memcpy(st->keys[j], st->keys[j-1], st->size_values[j-1]);
+            st->keys[j] = malloc(st->size_values[j+1]);
+            memcpy(st->keys[j], st->keys[j+1], st->size_values[j+1]);
             
             free(st->values[j]);
-            st->values[j] = malloc(st->size_values[j-1]);
-            memcpy(st->values[j], st->values[j-1], st->size_values[j-1]);
+            st->values[j] = malloc(st->size_values[j+1]);
+            memcpy(st->values[j], st->values[j+1], st->size_values[j+1]);
         }
 
-        free(st->keys[st->n_keys-1]);
-        free(st->values[st->n_keys-1]);
         st->n_keys--;
 
         /* resize if 1/4 full*/
@@ -460,7 +495,7 @@ void *
 keys(BinarySearchST st, Bool init)
 {
     void* cpy;
-    size_t size_data = st->size_values[0]; /*TODO : ver isso*/
+    size_t size_data = st->size_values[0];
 
     cpy = malloc(size_data);
 
