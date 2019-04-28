@@ -34,6 +34,7 @@ SOMEHOW*/
 /* 
  * FunÃ§Ãµes administrativas
  */
+ BinarySearchST resize(BinarySearchST st, int factor, size_t nKey, size_t nVal);
 
 /*----------------------------------------------------------*/
 /* 
@@ -77,7 +78,7 @@ initST(int (*compar)(const void *key1, const void *key2))  {
     BinarySearchST ST;
     ST = malloc(sizeof(struct binarySearchST));
 
-    ST->n = 1000; /*TODO : ver isso*/
+    ST->n = 1; /*TODO : ver isso*/
     ST->n_keys = 0;
     ST->current = 0;
 
@@ -139,10 +140,14 @@ void freeST(BinarySearchST st) {
 void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_t nVal) {
 
 
-        int i, j, index; /* TODO : pensar em nomes melhores */
+        int i, j; /* TODO : pensar em nomes melhores */
         if (val == NULL) {
             delete(st, key);
             return;
+        }
+
+        if (st->n_keys == st-> n) {
+            st = resize(st, 2, nKey, nVal);
         }
 
         i = rank(st, key);
@@ -160,18 +165,27 @@ void put(BinarySearchST st, const void *key, size_t nKey, const void *val, size_
         /*if (n == keys.length) resize(2*keys.length); resize? */
 
         for (j = st->n_keys; j > i; j--)  { /* checar se j cmeça com j-1*/
-            st->keys[j] = st->keys[j-1];
-            st->values[j] = st->values[j-1];
+
+            free(st->keys[j]);
+            st->keys[j] = malloc(st->size_values[j-1]);
+            memcpy(st->keys[j], st->keys[j-1], st->size_values[j-1]);
+            
+            free(st->values[j]);
+            st->values[j] = malloc(st->size_values[j-1]);
+            memcpy(st->values[j], st->values[j-1], st->size_values[j-1]);
+            /*st->keys[j] = st->keys[j-1];
+            st->values[j] = st->values[j-1];*/
         }
+
 
         st->keys[i] = malloc(nKey);
         memcpy(st->keys[i], key, nKey);
+
         st->values[i] = malloc(nVal);
         memcpy(st->values[i], val, nVal);
-        st->size_values[st->n_keys] = nVal;
-        st->n_keys++;
-        
 
+        st->size_values[i] = nVal; /*TODO ver esse i*/
+        st->n_keys++;
 
 }    
 
@@ -239,9 +253,15 @@ delete(BinarySearchST st, const void *key) {
         if (i == st->n_keys || st->compar(st->keys[i], key)!= 0) {
             return;
         }
-        for (j = i; j < st->n_keys-1; j++)  { /* TODO : aqui eu uso j < st->n_values-1?*/
-            st->keys[j] = st->keys[j+1]; /* TODO : isso não funciona em C*/
-            st->values[j] = st->values[j+1];
+        for (j = i; j < st->n_keys-1; j++)  {
+            
+            free(st->keys[j]);
+            st->keys[j] = malloc(st->size_values[j-1]);
+            memcpy(st->keys[j], st->keys[j-1], st->size_values[j-1]);
+            
+            free(st->values[j]);
+            st->values[j] = malloc(st->size_values[j-1]);
+            memcpy(st->values[j], st->values[j-1], st->size_values[j-1]);
         }
 
         free(st->keys[st->n_keys-1]);
@@ -256,15 +276,6 @@ delete(BinarySearchST st, const void *key) {
 
 }
 
-/*-----------------------------------------------------------*/
-/* 
- *  SIZE(ST)
- *
- *  RECEBE uma tabela de sÃ­mbolos ST.
- * 
- *  RETORNA o nÃºmero de itens (= pares chave-valor) na ST.
- *
- */
 int
 size(BinarySearchST st)
 {
@@ -487,5 +498,67 @@ visitST(BinarySearchST st, int (*visit)(const void *key, const void *val))
 
 /*------------------------------------------------------------*/
 /* 
- * FunÃ§Ãµes administrativas
- */
+ * FunÃ§Ãµes administrativas*/
+ BinarySearchST resize(BinarySearchST st, int factor, size_t nKey, size_t nVal) {
+    
+    void **new_keys;
+    void **new_values;
+    size_t *new_size_values;
+    /*size_t *new_size_values;*/
+
+    int i, oldsize;
+
+    new_keys = malloc(st->n * sizeof(void *));
+    new_values = malloc(st->n * sizeof(void *));
+    new_size_values = malloc(st->n * sizeof(size_t));
+    /*new_size_values = malloc(st->n * sizeof(size_t));*/
+
+    for(i = 0; i < st->n ; i++) {
+        
+        new_keys[i] = malloc(nKey);
+        memcpy(new_keys[i], st->keys[i], nKey);
+
+        new_values[i] = malloc(nVal);
+        memcpy(new_values[i], st->values[i], nVal);
+
+        new_size_values[i] = st->size_values[i];
+
+        /*memcpy(new_size_values[i], st->size_values[i], sizeof(size_value[i]));*/
+        
+        free(st->keys[i]);
+        free(st->values[i]);
+
+    }
+    free(st->keys);
+    free(st->values);
+    free(st->size_values);
+
+    oldsize = st->n;
+    st->n = factor * st->n;
+
+    st->keys = malloc(st->n * sizeof(void *));
+    st->values = malloc(st->n * sizeof(void *));
+    st->size_values = malloc(st->n * sizeof(size_t));
+
+    for (i = 0; i < oldsize; i++) {
+        st->keys[i] = malloc(nKey);
+        memcpy(st->keys[i], new_keys[i], nKey);
+
+        st->values[i] = malloc(nVal);
+        memcpy(st->values[i], new_values[i], nVal);
+
+        st->size_values[i] = new_size_values[i];
+
+        free(new_keys[i]);
+        free(new_values[i]);
+
+    }
+
+    free(new_keys);
+    free(new_values);
+    free(new_size_values);
+
+
+    return st;
+}
+ /**/
