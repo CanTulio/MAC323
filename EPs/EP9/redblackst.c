@@ -35,7 +35,11 @@
  */
 typedef struct node Node;
 struct redBlackST {
-    char x;
+    
+    char x; /* TODO : pra que esse x?*/
+    int size;
+    int (*compar)();
+    Node* head;
 };
 
 /*----------------------------------------------------------*/
@@ -44,7 +48,12 @@ struct redBlackST {
  *
  */
 struct node {
-    char x;
+    void* key;
+    void* value;
+    Bool color;
+    Node* right;
+    Node* left;
+    int size; /* quantidade de elementos pendurados naquele node*/
 };
 
 /*------------------------------------------------------------*/
@@ -59,6 +68,12 @@ struct node {
  *  is23(), isBalanced().
  *
  */
+
+Node* rotateLeft(Node* head);
+Node* rotateRigth(Node* head);
+void freeBST(Node* head);
+Node* putKey(RedBlackST st, Node* head, void* key, size_t sizekey, void* val, size_t sizeval);
+Node* newNode(void* key, size_t sizekey, void* val, size_t sizeval, Bool color, int count);
 
 /*---------------------------------------------------------------*/
 static Bool
@@ -100,7 +115,14 @@ isBalanced(RedBlackST st);
 RedBlackST
 initST(int (*compar)(const void *key1, const void *key2))
 {
-    return NULL;
+    RedBlackST st;
+    st = malloc(sizeof(RedBlackST));
+    
+    st->compar = compar;
+    st->size = 0; /* contagem de subtrees*/
+    st->head = malloc(sizeof(struct node));
+    st->head = NULL;
+    return st;
 }
 
 /*-----------------------------------------------------------*/
@@ -111,9 +133,11 @@ initST(int (*compar)(const void *key1, const void *key2))
  *  utilizada por ST.
  *
  */
-void  
-freeST(RedBlackST st)
-{
+void freeST(RedBlackST st) {
+    free(st->compar);
+    freeBST(st->head);
+    free(st->head);
+    free(st);
 }
 
 
@@ -145,6 +169,16 @@ freeST(RedBlackST st)
 void  
 put(RedBlackST st, const void *key, size_t sizeKey, const void *val, size_t sizeVal)
 {
+    if (key == NULL) {
+        delete(st, key);
+        return;
+    }
+
+    else {
+        st->head = putKey(st, st->head, key, sizeKey, val, sizeVal);
+    }
+
+    st->head->color = BLACK;
 }    
 
 
@@ -163,7 +197,23 @@ put(RedBlackST st, const void *key, size_t sizeKey, const void *val, size_t size
 void *
 get(RedBlackST st, const void *key)
 {
-    return NULL;
+    int cmp;
+    Node* p = st->head;
+    while (p != NULL) {
+
+        cmp = st->compar(key, p->key);
+
+        if (cmp < 0) 
+            p = p->left;
+
+        else if (cmp > 0)
+             p = p->right;
+
+        else
+            return p->value;
+
+    }
+        return NULL;
 }
 
 
@@ -179,7 +229,7 @@ get(RedBlackST st, const void *key)
 Bool
 contains(RedBlackST st, const void *key)
 {
-    return FALSE;
+    return (get(st, key) != NULL);
 }
 
 /*-----------------------------------------------------------*/
@@ -210,7 +260,7 @@ delete(RedBlackST st, const void *key)
 int
 size(RedBlackST st)
 {
-    return 0;
+    return st->size;
 }
 
 
@@ -226,7 +276,7 @@ size(RedBlackST st)
 Bool
 isEmpty(RedBlackST st)
 {
-    return TRUE;
+    return st->size == 0;
 }
 
 /*------------------------------------------------------------*/
@@ -361,6 +411,77 @@ keys(RedBlackST st, Bool init)
 /* 
  * FunÃ§Ãµes administrativas
  */
+
+void freeBST(Node* head) {
+    if (head != NULL) {
+        freeBST(head->left);
+        freeBST(head->right);
+        free(head);
+    }
+}
+
+Node* newNode(void* key, size_t sizekey, void* val, size_t sizeval, Bool color, int count) {
+    Node* temp_node;
+    temp_node = malloc(sizeof(Node));
+
+    temp_node->key = malloc(sizekey);
+    temp_node->value = malloc(sizeval);
+
+    memcpy(temp_node->key, key, sizekey);
+    memcpy(temp_node->value, val, sizeval);
+
+    temp_node->color = color;
+    temp_node->size = count;
+
+    return temp_node; /* Verificar se isso da merda, proque não to retornando 
+    copia, so referencia*/
+}
+
+Node* putKey(RedBlackST st, Node* head, void* key, size_t sizekey, void* val, size_t sizeval) {
+    
+    int cmp;
+    if (head == NULL)
+        return newNode(key, val, sizekey, sizeval, RED, 1);
+
+    cmp = st->compar(key, head->key);
+    if (cmp < 0)
+        head = putkey(st, head->left, key, sizekey, val, sizeval);
+    else if (cmp > 0)
+        head = putkey(st, head->right, sizekey, val, sizeval);
+    else
+        memcpy(head->value, val, sizeval);
+    
+}
+
+Node* rotateRigth(Node* head) {
+    
+    Node* x;
+    
+    x =  head->left;
+    head->left = x->right;
+    x->right = head;
+
+    x->color = x->right->color;
+    x->right->color = RED;
+
+    x->size = head->size;
+    head->size = size(head->left) + size(head->right) + 1;
+
+    return x;
+}
+
+Node* rotateLeft(Node* h) {
+        // assert (h != null) && isRed(h.right);
+        Node* x = h->right;
+        h->right = x->left;
+        x->left = h;
+        x->color = x->left->color;
+        x->left->color = RED;
+        x->size = h->size;
+        h->size = size(h->left) + size(h->right) + 1;
+        return x;
+    }
+
 
 /***************************************************************************
  *  Utility functions.
