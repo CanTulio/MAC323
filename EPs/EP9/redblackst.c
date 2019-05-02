@@ -54,6 +54,8 @@ struct node {
     Node* right;
     Node* left;
     int size; /* quantidade de elementos pendurados naquele node*/
+    size_t size_key;
+    size_t size_val;
 };
 
 /*------------------------------------------------------------*/
@@ -72,8 +74,9 @@ struct node {
 Node* rotateLeft(Node* head);
 Node* rotateRigth(Node* head);
 void freeBST(Node* head);
-Node* putKey(RedBlackST st, Node* head, void* key, size_t sizekey, void* val, size_t sizeval);
-Node* newNode(void* key, size_t sizekey, void* val, size_t sizeval, Bool color, int count);
+Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const void* val, size_t sizeval);
+Node* newNode(const void* key, size_t sizekey, const void* val, size_t sizeval, Bool color, int count);
+int sizeNode(Node* n);
 
 /*---------------------------------------------------------------*/
 static Bool
@@ -116,11 +119,10 @@ RedBlackST
 initST(int (*compar)(const void *key1, const void *key2))
 {
     RedBlackST st;
-    st = malloc(sizeof(RedBlackST));
+    st = emalloc(sizeof(RedBlackST));
     
     st->compar = compar;
     st->size = 0; /* contagem de subtrees*/
-    st->head = malloc(sizeof(struct node));
     st->head = NULL;
     return st;
 }
@@ -134,7 +136,7 @@ initST(int (*compar)(const void *key1, const void *key2))
  *
  */
 void freeST(RedBlackST st) {
-    free(st->compar);
+    /*free(st->compar);*/
     freeBST(st->head);
     free(st->head);
     free(st);
@@ -170,6 +172,7 @@ void
 put(RedBlackST st, const void *key, size_t sizeKey, const void *val, size_t sizeVal)
 {
     if (key == NULL) {
+        // printf("A chave é nula!\n");
         delete(st, key);
         return;
     }
@@ -180,8 +183,6 @@ put(RedBlackST st, const void *key, size_t sizeKey, const void *val, size_t size
 
     st->head->color = BLACK;
 }    
-
-
 /*-----------------------------------------------------------*/
 /*
  *  get(ST, KEY)
@@ -198,22 +199,36 @@ void *
 get(RedBlackST st, const void *key)
 {
     int cmp;
+    int count = 0;
+    void* valueCpy;
     Node* p = st->head;
     while (p != NULL) {
 
+        // printf("Antes do st->compar \n")
+        /*printf("Valor de p vale %d\n", p->value);*/
+        printf("key, p-key : %s\n", (char*)key);
         cmp = st->compar(key, p->key);
+
+        // printf("Depois do st->compar \n");
 
         if (cmp < 0) 
             p = p->left;
 
-        else if (cmp > 0)
+        else if (cmp > 0) {
+            printf("p->right : %p\n", p->right);
              p = p->right;
+        }
 
-        else
-            return p->value;
+        else {
+            valueCpy = emalloc(p->size_val);
+            memcpy(valueCpy, p->value, p->size_val );
+            return valueCpy;
+        }
+        count++;
 
+        printf("count vale %d\n", count);
     }
-        return NULL;
+    return NULL;
 }
 
 
@@ -260,7 +275,9 @@ delete(RedBlackST st, const void *key)
 int
 size(RedBlackST st)
 {
-    return st->size;
+    if (st->head == NULL)
+        return 0;
+    return sizeNode(st->head);
 }
 
 
@@ -420,12 +437,17 @@ void freeBST(Node* head) {
     }
 }
 
-Node* newNode(void* key, size_t sizekey, void* val, size_t sizeval, Bool color, int count) {
+Node* newNode(const void* key, size_t sizekey,const void* val, size_t sizeval, Bool color, int count) {
     Node* temp_node;
-    temp_node = malloc(sizeof(Node));
+    temp_node = emalloc(sizeof(Node));
 
-    temp_node->key = malloc(sizekey);
-    temp_node->value = malloc(sizeval);
+    temp_node->key = emalloc(sizekey);
+    temp_node->value = emalloc(sizeval);
+    temp_node->size_key = sizekey;
+    temp_node->size_val = sizeval;
+
+    temp_node->left = NULL;
+    temp_node->right = NULL;
 
     memcpy(temp_node->key, key, sizekey);
     memcpy(temp_node->value, val, sizeval);
@@ -437,20 +459,36 @@ Node* newNode(void* key, size_t sizekey, void* val, size_t sizeval, Bool color, 
     copia, so referencia*/
 }
 
-Node* putKey(RedBlackST st, Node* head, void* key, size_t sizekey, void* val, size_t sizeval) {
+Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const void* val, size_t sizeval) {
     
     int cmp;
-    if (head == NULL)
-        return newNode(key, val, sizekey, sizeval, RED, 1);
+    if (head == NULL){
+        printf("Criação de um novo nó de conteudo %s\n", key);
+        head = newNode(key, sizekey, val, sizeval, RED, 1); /* TODO : o erro ta aqui */
+        return head;
+    }
 
     cmp = st->compar(key, head->key);
-    if (cmp < 0)
-        head = putkey(st, head->left, key, sizekey, val, sizeval);
-    else if (cmp > 0)
-        head = putkey(st, head->right, sizekey, val, sizeval);
-    else
+    if (cmp < 0){
+        head->left = putKey(st, head->left, key, sizekey, val, sizeval);
+    }
+    else if (cmp > 0){
+        head->right = putKey(st, head->right,key, sizekey, val, sizeval);
+
+    }
+    else{
+        free(head->value);
+        head->value = emalloc(sizeval);
+        head->size_val = sizeval;
         memcpy(head->value, val, sizeval);
+    }
+    /* printf("Retornando a chave %s", head->key);*/
+    return head;
     
+}
+
+int sizeNode(Node* n) {
+    return n->size;
 }
 
 Node* rotateRigth(Node* head) {
@@ -465,22 +503,22 @@ Node* rotateRigth(Node* head) {
     x->right->color = RED;
 
     x->size = head->size;
-    head->size = size(head->left) + size(head->right) + 1;
+    head->size = sizeNode(head->left) + sizeNode(head->right) + 1;
 
     return x;
 }
 
 Node* rotateLeft(Node* h) {
-        // assert (h != null) && isRed(h.right);
+        /* assert (h != null) && isRed(h.right);*/
         Node* x = h->right;
         h->right = x->left;
         x->left = h;
         x->color = x->left->color;
         x->left->color = RED;
         x->size = h->size;
-        h->size = size(h->left) + size(h->right) + 1;
+        h->size = sizeNode(h->left) + sizeNode(h->right) + 1;
         return x;
-    }
+}
 
 
 /***************************************************************************
