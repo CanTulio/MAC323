@@ -10,6 +10,8 @@
  */
 
 /* interface para o uso da funcao deste mÃ³dulo */
+
+// TODO : checar alocamento de mometoria
 #include "redblackst.h"  
 
 #include <stdlib.h>  /* free() */
@@ -70,13 +72,21 @@ struct node {
  *  is23(), isBalanced().
  *
  */
-
+void flipColors(Node* head);
+Bool isRed(Node* x);
 Node* rotateLeft(Node* head);
-Node* rotateRigth(Node* head);
+Node* rotateRight(Node* head);
 void freeBST(Node* head);
 Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const void* val, size_t sizeval);
 Node* newNode(const void* key, size_t sizekey, const void* val, size_t sizeval, Bool color, int count);
 int sizeNode(Node* n);
+void delete(RedBlackST st, const void* key);
+Node* deleteKey(RedBlackST st, Node* h, const void* key);
+Node* minNode(Node* h);
+Node* deleteMinNode(Node* h);
+Node* moveRedRight (Node* h);
+Node* moveRedLeft (Node* h);
+Node* balance(Node* h);
 
 /*---------------------------------------------------------------*/
 static Bool
@@ -252,9 +262,15 @@ contains(RedBlackST st, const void *key)
  *  Se KEY nÃ£o estÃ¡ em ST, faz nada.
  *
  */
-void
-delete(RedBlackST st, const void *key)
-{
+void delete(RedBlackST st, const void *key) {
+
+    if (!contains(st, key))
+        return;
+    // if both children of root are black, set root to red
+    if (!isRed(st->head->left) && !isRed(st->head->right))
+        st->head->color = RED;
+    st->head = deleteKey(st, st->head, key);
+    if (!isEmpty(st)) st->head->color = BLACK;
 }
 
 
@@ -310,7 +326,12 @@ isEmpty(RedBlackST st)
 void *
 min(RedBlackST st)
 {
-    return NULL;
+    if (isEmpty(st))
+        return NULL;
+    else {
+        Node* min = minNode(st->head);
+        return min->key;
+    }
 }
 
 
@@ -376,8 +397,11 @@ select(RedBlackST st, int k)
  *
  */
 void
-deleteMin(RedBlackST st)
-{
+deleteMin(RedBlackST st) {
+    if (!isRed(st->head->left) && !isRed(st->head->right))
+        st->head->color = RED;
+    st->head = deleteMinNode(st->head);
+    if (!isEmpty(st)) st->head->color = BLACK;
 }
 
 
@@ -424,6 +448,115 @@ keys(RedBlackST st, Bool init)
  * FunÃ§Ãµes administrativas
  */
 
+Node* balance(Node* h) {
+    if (isRed(h->right))
+        h = rotateLeft(h);
+    if (isRed(h->left) && isRed(h->left->left))
+        h = rotateRight(h);
+    if (isRed(h->left) && isRed(h->right))
+        flipColors(h);
+
+    h->size = sizeNode(h->left) + sizeNode(h->right) + 1;
+    return h;
+}
+
+Node* moveRedLeft(Node* h) {
+    flipColors(h);
+
+    if (isRed(h->right->left)) { 
+        h->right = rotateRight(h->right);
+        h = rotateLeft(h);
+        flipColors(h);
+    }
+
+    return h;
+}
+
+Node* moveRedRight(Node* h) {
+    flipColors(h);
+
+    if (isRed(h->left->left)) { 
+        h = rotateRight(h);
+        flipColors(h);
+    }
+
+    return h;
+}
+
+Node* deleteMinNode(Node* h) {
+    if (h->left == NULL)
+        return NULL;
+
+    if (!isRed(h->left) && !isRed(h->left->left))
+        h = moveRedLeft(h);
+
+    h->left = deleteMinNode(h->left);
+
+    return balance(h);
+}
+
+Node* minNode(Node* h) {
+    if (h->left == NULL) {
+        Node* retNode = emalloc(sizeof(Node));
+        retNode->value = emalloc(h->size_val);
+        retNode->key = emalloc(h->size_key);
+        memcpy(retNode->key, h->key, h->size_key);
+        memcpy(retNode->value, h->value, h->size_val);
+
+        return retNode;
+    }
+    else
+        return minNode(h->left);
+}
+
+Node* deleteKey(RedBlackST st, Node* h, const void* key) {
+    
+    if (st->compar(h->key, key) < 0)  {
+            if (!isRed(h->left) && !isRed(h->left->left))
+                h = moveRedLeft(h);
+            h->left = deleteKey(st, h->left, key);
+        }
+        else {
+            if (isRed(h->left))
+                h = rotateRight(h);
+
+            if (st->compar(key, h->key) == 0 && (h->right == NULL))
+                return NULL;
+
+            if (!isRed(h->right) && !isRed(h->right->left))
+                h = moveRedRight(h);
+
+            if (st->compar(key, h->key) == 0) {
+                Node* x = minNode(h->right); // TODO : aqui tem alloc, memcpy...
+                free(h->key);
+                free(h->value);
+                h->key = emalloc(h->size_key);
+                h->value = emalloc(h->size_val);
+                memcpy(h->key, x->key, h->size_key);
+                memcpy(h->value, x->value, h->size_val);
+                // TODO : dar free no x;
+                // h->val = get(h->right, min(h->right).key);
+                // h->key = min(h->right).key;
+                h->right = deleteMinNode(h->right);
+            }
+            else h->right = deleteKey(st, h->right, key);
+        }
+        return balance(h);
+}
+
+void flipColors(Node* head) {  //TODO : garanto que head (nem os filhos) sao nulos, mas ficar atento a isso
+
+    head->color = !head->color;
+    head->left->color = ! head->left->color;
+    head->right->color = !head->right->color;
+}
+
+Bool isRed(Node* x) {
+    if (x == NULL)
+        return FALSE;
+    else
+        return x->color == RED;
+}
 void freeBST(Node* head) {
     if (head != NULL) {
         freeBST(head->left);
@@ -478,7 +611,15 @@ Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const v
         head->size_val = sizeval;
         memcpy(head->value, val, sizeval);
     }
-    /* printf("Retornando a chave %s", head->key);*/
+    if (isRed(head->right) && !isRed(head->left))      
+        head = rotateLeft(head);
+
+    if (isRed(head->left)  &&  isRed(head->left->left)) 
+        head = rotateRight(head);
+
+    if (isRed(head->left)  &&  isRed(head->right))
+        flipColors(head);
+
     head->size = sizeNode(head->left) + sizeNode(head->right) + 1;
     return head;
     
@@ -491,7 +632,7 @@ int sizeNode(Node* n) {
         return 0;
 }
 
-Node* rotateRigth(Node* head) {
+Node* rotateRight(Node* head) {
     
     Node* x;
     
@@ -509,7 +650,7 @@ Node* rotateRigth(Node* head) {
 }
 
 Node* rotateLeft(Node* h) {
-        /* assert (h != null) && isRed(h.right);*/
+        /* assert (h != null) && isRed(h->right);*/
         Node* x = h->right;
         h->right = x->left;
         x->left = h;
