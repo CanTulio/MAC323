@@ -199,14 +199,12 @@ void *
 get(RedBlackST st, const void *key)
 {
     int cmp;
-    int count = 0;
     void* valueCpy;
     Node* p = st->head;
     while (p != NULL) {
 
         // printf("Antes do st->compar \n")
         /*printf("Valor de p vale %d\n", p->value);*/
-        printf("key, p-key : %s\n", (char*)key);
         cmp = st->compar(key, p->key);
 
         // printf("Depois do st->compar \n");
@@ -215,7 +213,6 @@ get(RedBlackST st, const void *key)
             p = p->left;
 
         else if (cmp > 0) {
-            printf("p->right : %p\n", p->right);
              p = p->right;
         }
 
@@ -224,9 +221,7 @@ get(RedBlackST st, const void *key)
             memcpy(valueCpy, p->value, p->size_val );
             return valueCpy;
         }
-        count++;
 
-        printf("count vale %d\n", count);
     }
     return NULL;
 }
@@ -277,7 +272,7 @@ size(RedBlackST st)
 {
     if (st->head == NULL)
         return 0;
-    return sizeNode(st->head);
+    return st->size;
 }
 
 
@@ -463,8 +458,9 @@ Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const v
     
     int cmp;
     if (head == NULL){
-        printf("Criação de um novo nó de conteudo %s\n", key);
-        head = newNode(key, sizekey, val, sizeval, RED, 1); /* TODO : o erro ta aqui */
+        printf("Criação de um novo nó de conteudo %s\n", (char*)key);
+        head = newNode(key, sizekey, val, sizeval, RED, 1);
+        st->size++;
         return head;
     }
 
@@ -483,12 +479,16 @@ Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const v
         memcpy(head->value, val, sizeval);
     }
     /* printf("Retornando a chave %s", head->key);*/
+    head->size = sizeNode(head->left) + sizeNode(head->right) + 1;
     return head;
     
 }
 
 int sizeNode(Node* n) {
-    return n->size;
+    if (n != NULL)
+        return n->size;
+    else
+        return 0;
 }
 
 Node* rotateRigth(Node* head) {
