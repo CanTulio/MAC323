@@ -291,11 +291,7 @@ get(RedBlackST st, const void *key)
     Node* p = st->head;
     while (p != NULL) {
 
-        // printf("Antes do st->compar \n")
-        /*printf("Valor de p vale %d\n", p->value);*/
         cmp = st->compar(key, p->key);
-
-        // printf("Depois do st->compar \n");
 
         if (cmp < 0) 
             p = p->left;
@@ -891,14 +887,22 @@ Bool NodeisSizeConsistent(Node* h) {
  */  
 /* check that ranks are consistent */
 static Bool
-isRankConsistent(RedBlackST st){
-    // int i;
-    // for (i = 0; i < st->size; i++) {
-    //     if (i != rank(st, select(st, i))) return FALSE;
-    // return FALSE; // preciso fazer o keys aqui
-    return FALSE;
+isRankConsistent(RedBlackST st) {
+    int i;
+    st->keys_count = 0;
+    Bool first = TRUE;
+    for (i = 0; i < st->size; i++) {
+        if (i != rank(st, select(st, i))) return FALSE;
+    }
+    void* keys_ret = keys(st, first);
+    first = FALSE;
+    while (keys_ret != NULL) {
+        if (st->compar(keys_ret, select(st, rank(st, keys_ret))) != 0) return FALSE;
+        keys_ret = keys(st, first);
+    }
+    st->keys_count = 0;
+    return TRUE;
 }
-
 /* 
  *  IS23(ST)
  *
