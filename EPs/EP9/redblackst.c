@@ -69,9 +69,9 @@ typedef struct node Node;
 struct redBlackST {
     
     int size;
-    int (*compar)();
-    Node* head;
     int keys_count;
+    int (*compar)();
+    Node* head;  
 };
 
 /*----------------------------------------------------------*/
@@ -80,14 +80,19 @@ struct redBlackST {
  *
  */
 struct node {
+
     void* key;
     void* value;
-    Bool color;
+
     Node* right;
     Node* left;
-    int size; /* quantidade de elementos pendurados naquele node*/
+
+    int size;
+
     size_t size_key;
     size_t size_val;
+
+    Bool color;
 };
 
 /*------------------------------------------------------------*/
@@ -139,6 +144,8 @@ Node* deleteMinNode(Node* h);
 /*---------------------------------------------------------------*/
 
 Node* deleteMaxNode(Node* h);
+/*---------------------------------------------------------------*/
+
 
 Node* moveRedRight (Node* h);
 /*---------------------------------------------------------------*/
@@ -150,20 +157,29 @@ Node* balance(Node* h);
 /*---------------------------------------------------------------*/
 
 int rankNode(RedBlackST st, Node* h, const void *key);
+/*---------------------------------------------------------------*/
 
 Node* selectNode(Node* h, int k);
+/*---------------------------------------------------------------*/
 
 Node* deleteMaxNode(Node* h);
+/*---------------------------------------------------------------*/
 
 Node* maxNode(Node* h);
+/*---------------------------------------------------------------*/
 
 int nodeHeight(Node* h);
+/*---------------------------------------------------------------*/
 
 Bool nodeIsBST(RedBlackST st, Node* h, void* min, void* max);
 
+/*---------------------------------------------------------------*/
+
 Bool NodeisSizeConsistent(Node* h);
+/*---------------------------------------------------------------*/
 
 Bool nodeIs23(RedBlackST st, Node* h);
+/*---------------------------------------------------------------*/
 
 Bool nodeIsBalanced(Node* h, int black);
 /*---------------------------------------------------------------*/
@@ -210,7 +226,7 @@ initST(int (*compar)(const void *key1, const void *key2))
     st = emalloc(sizeof(struct redBlackST));
     
     st->compar = compar;
-    st->size = 0; /* contagem de subtrees*/
+    st->size = 0;
     st->head = NULL;
     st->keys_count = 0;
     return st;
@@ -225,7 +241,6 @@ initST(int (*compar)(const void *key1, const void *key2))
  *
  */
 void freeST(RedBlackST st) {
-    /*free(st->compar);*/
     freeBST(st->head);
     free(st);
 }
@@ -320,7 +335,7 @@ get(RedBlackST st, const void *key)
  *
  */
 Bool
-contains(RedBlackST st, const void *key) // check
+contains(RedBlackST st, const void *key)
 {
     return (get(st, key) != NULL);
 }
@@ -335,7 +350,7 @@ contains(RedBlackST st, const void *key) // check
  *  Se KEY nÃ£o estÃ¡ em ST, faz nada.
  *
  */
-void delete(RedBlackST st, const void *key) { // check
+void delete(RedBlackST st, const void *key) {
 
     if (!contains(st, key))
         return;
@@ -357,7 +372,7 @@ void delete(RedBlackST st, const void *key) { // check
  *  RETORNA o nÃºmero de itens (= pares chave-valor) na ST.
  *
  */
-int // check
+int
 size(RedBlackST st)
 {
     if (st->head == NULL)
@@ -375,7 +390,7 @@ size(RedBlackST st)
  *  RETORNA TRUE se ST estÃ¡ vazia e FALSE em caso contrÃ¡rio.
  *
  */
-Bool // check
+Bool
 isEmpty(RedBlackST st)
 {
     return st->size == 0;
@@ -398,13 +413,13 @@ isEmpty(RedBlackST st)
  *
  */
 void *
-min(RedBlackST st) // check
+min(RedBlackST st)
 {
     if (isEmpty(st))
         return NULL;
     else {
         void* cpy;
-        Node* min = minNode(st->head); // TODO acho que o erro ta aqui, o min não ta retornando uma copia
+        Node* min = minNode(st->head); 
         cpy = emalloc(min->size_key);
         memcpy(cpy, min->key, min->size_key);
         return cpy;
@@ -447,8 +462,7 @@ Node* maxNode(Node* h) {
  *  Se ST estÃ¡ vazia RETORNA NULL.
  *
  */
-int
-rank(RedBlackST st, const void *key) {
+int rank(RedBlackST st, const void *key) {
     return rankNode(st, st->head, key);
 } 
 
@@ -471,8 +485,7 @@ int rankNode(RedBlackST st, Node* h, const void *key) {
  *  Se ST nÃ£o tem K+1 elementos RETORNA NULL.
  *
  */
-void *
-select(RedBlackST st, int k)
+void* select(RedBlackST st, int k)
 {
     if (k+1 > st->size)
         return NULL;
@@ -501,8 +514,7 @@ Node* selectNode(Node* h, int k) {
  *  Se ST estÃ¡ vazia, faz nada.
  *
  */
-void
-deleteMin(RedBlackST st) { // check
+void deleteMin(RedBlackST st) {
     if (!isRed(st->head->left) && !isRed(st->head->right))
         st->head->color = RED;
     st->head = deleteMinNode(st->head);
@@ -521,8 +533,7 @@ deleteMin(RedBlackST st) { // check
  *  Se ST estÃ¡ vazia, faz nada.
  *
  */
-void
-deleteMax(RedBlackST st) {
+void deleteMax(RedBlackST st) {
     if (!isRed(st->head->left) && !isRed(st->head->right))
         st->head->color = RED;
 
@@ -561,9 +572,7 @@ Node* deleteMaxNode(Node* h) {
  *  indefinido. 
  *  
  */
-void * 
-keys(RedBlackST st, Bool init)
-{
+void* keys(RedBlackST st, Bool init) {
     void* retVal;
     if (select(st, st->keys_count) == NULL)
         return NULL;
@@ -584,7 +593,7 @@ keys(RedBlackST st, Bool init)
  * FunÃ§Ãµes administrativas
  */
 
-Node* balance(Node* h) { // check
+Node* balance(Node* h) {
     if (isRed(h->right))
         h = rotateLeft(h);
     if (isRed(h->left) && isRed(h->left->left))
@@ -596,7 +605,7 @@ Node* balance(Node* h) { // check
     return h;
 }
 
-Node* moveRedLeft(Node* h) { // check
+Node* moveRedLeft(Node* h) {
     flipColors(h);
 
     if (isRed(h->right->left)) { 
@@ -780,7 +789,6 @@ Node* rotateRight(Node* head) {
 }
 
 Node* rotateLeft(Node* h) {
-        /* assert (h != NULL) && isRed(h->right);*/
         Node* x = h->right;
         h->right = x->left;
         x->left = h;
@@ -867,8 +875,7 @@ Bool nodeIsBST(RedBlackST st, Node* h, void* min, void* max) {
  *  vale que size(h) = 1 + size(h->left) + size(h->right) e 
  *  FALSE em caso contrÃ¡rio.
  */
-static Bool
-isSizeConsistent(RedBlackST st)
+static Bool isSizeConsistent(RedBlackST st)
 {
     return NodeisSizeConsistent(st->head);
 }
@@ -887,8 +894,7 @@ Bool NodeisSizeConsistent(Node* h) {
  *  select() sÃ£o consistentes.
  */  
 /* check that ranks are consistent */
-static Bool
-isRankConsistent(RedBlackST st) {
+static Bool isRankConsistent(RedBlackST st) {
     int i;
     st->keys_count = 0;
     Bool first = TRUE;
@@ -911,8 +917,7 @@ isRankConsistent(RedBlackST st) {
  *  para a direta ou se ha dois links para esquerda seguidos RED 
  *  Em caso contrÃ¡rio RETORNA TRUE (= a ST representa uma Ã¡rvore 2-3). 
  */
-static Bool
-is23(RedBlackST st)
+static Bool is23(RedBlackST st)
 {
     return nodeIs23(st, st->head);
 }
@@ -932,8 +937,7 @@ Bool nodeIs23(RedBlackST st, Node* h) {
  *  RECEBE uma RedBlackST ST e RETORNA TRUE se st satisfaz
  *  balanceamento negro perfeiro.
  */ 
-static Bool
-isBalanced(RedBlackST st)
+static Bool isBalanced(RedBlackST st)
 {
     int black = 0;     // number of black links on path from root to min
     Node* x = st->head;
