@@ -38,7 +38,6 @@
 typedef struct node Node;
 struct redBlackST {
     
-    char x; /* TODO : pra que esse x?*/
     int size;
     int (*compar)();
     Node* head;
@@ -182,7 +181,6 @@ void
 put(RedBlackST st, const void *key, size_t sizeKey, const void *val, size_t sizeVal)
 {
     if (key == NULL) {
-        // printf("A chave é nula!\n");
         delete(st, key);
         return;
     }
@@ -247,7 +245,7 @@ get(RedBlackST st, const void *key)
  *
  */
 Bool
-contains(RedBlackST st, const void *key)
+contains(RedBlackST st, const void *key) // check
 {
     return (get(st, key) != NULL);
 }
@@ -262,7 +260,7 @@ contains(RedBlackST st, const void *key)
  *  Se KEY nÃ£o estÃ¡ em ST, faz nada.
  *
  */
-void delete(RedBlackST st, const void *key) {
+void delete(RedBlackST st, const void *key) { // check
 
     if (!contains(st, key))
         return;
@@ -270,6 +268,7 @@ void delete(RedBlackST st, const void *key) {
     if (!isRed(st->head->left) && !isRed(st->head->right))
         st->head->color = RED;
     st->head = deleteKey(st, st->head, key);
+    st->size--;
     if (!isEmpty(st)) st->head->color = BLACK;
 }
 
@@ -283,7 +282,7 @@ void delete(RedBlackST st, const void *key) {
  *  RETORNA o nÃºmero de itens (= pares chave-valor) na ST.
  *
  */
-int
+int // check
 size(RedBlackST st)
 {
     if (st->head == NULL)
@@ -301,7 +300,7 @@ size(RedBlackST st)
  *  RETORNA TRUE se ST estÃ¡ vazia e FALSE em caso contrÃ¡rio.
  *
  */
-Bool
+Bool // check
 isEmpty(RedBlackST st)
 {
     return st->size == 0;
@@ -324,13 +323,16 @@ isEmpty(RedBlackST st)
  *
  */
 void *
-min(RedBlackST st)
+min(RedBlackST st) // check
 {
     if (isEmpty(st))
         return NULL;
     else {
-        Node* min = minNode(st->head);
-        return min->key;
+        void* cpy;
+        Node* min = minNode(st->head); // TODO acho que o erro ta aqui, o min não ta retornando uma copia
+        cpy = emalloc(min->size_key);
+        memcpy(cpy, min->key, min->size_key);
+        return cpy;
     }
 }
 
@@ -397,10 +399,11 @@ select(RedBlackST st, int k)
  *
  */
 void
-deleteMin(RedBlackST st) {
+deleteMin(RedBlackST st) { // check
     if (!isRed(st->head->left) && !isRed(st->head->right))
         st->head->color = RED;
     st->head = deleteMinNode(st->head);
+    st->size--;
     if (!isEmpty(st)) st->head->color = BLACK;
 }
 
@@ -448,7 +451,7 @@ keys(RedBlackST st, Bool init)
  * FunÃ§Ãµes administrativas
  */
 
-Node* balance(Node* h) {
+Node* balance(Node* h) { // check
     if (isRed(h->right))
         h = rotateLeft(h);
     if (isRed(h->left) && isRed(h->left->left))
@@ -460,7 +463,7 @@ Node* balance(Node* h) {
     return h;
 }
 
-Node* moveRedLeft(Node* h) {
+Node* moveRedLeft(Node* h) { // check
     flipColors(h);
 
     if (isRed(h->right->left)) { 
@@ -483,7 +486,7 @@ Node* moveRedRight(Node* h) {
     return h;
 }
 
-Node* deleteMinNode(Node* h) {
+Node* deleteMinNode(Node* h) { 
     if (h->left == NULL)
         return NULL;
 
@@ -497,13 +500,7 @@ Node* deleteMinNode(Node* h) {
 
 Node* minNode(Node* h) {
     if (h->left == NULL) {
-        Node* retNode = emalloc(sizeof(Node));
-        retNode->value = emalloc(h->size_val);
-        retNode->key = emalloc(h->size_key);
-        memcpy(retNode->key, h->key, h->size_key);
-        memcpy(retNode->value, h->value, h->size_val);
-
-        return retNode;
+        return h;
     }
     else
         return minNode(h->left);
@@ -511,43 +508,46 @@ Node* minNode(Node* h) {
 
 Node* deleteKey(RedBlackST st, Node* h, const void* key) {
     
-    if (st->compar(h->key, key) < 0)  {
-            if (!isRed(h->left) && !isRed(h->left->left))
+    if (st->compar(key, h->key) < 0)  {
+            if (!isRed(h->left) && !isRed(h->left->left)){
                 h = moveRedLeft(h);
+            }
             h->left = deleteKey(st, h->left, key);
+    }
+    else {
+        if (isRed(h->left)) {
+            h = rotateRight(h);
+        }
+
+        if (st->compar(key, h->key) == 0 && (h->right == NULL)){ 
+            return NULL;
+        }
+        
+        if (!isRed(h->right) && !isRed(h->right->left)){
+            h = moveRedRight(h);
+        }
+
+        if (st->compar(key, h->key) == 0) {
+            Node* x = minNode(h->right);
+            free(h->key);
+            free(h->value);
+            h->key = emalloc(h->size_key);
+            h->value = emalloc(h->size_val);
+            memcpy(h->key, x->key, h->size_key);
+            memcpy(h->value, x->value, h->size_val);
+            h->right = deleteMinNode(h->right);
         }
         else {
-            if (isRed(h->left))
-                h = rotateRight(h);
-
-            if (st->compar(key, h->key) == 0 && (h->right == NULL))
-                return NULL;
-
-            if (!isRed(h->right) && !isRed(h->right->left))
-                h = moveRedRight(h);
-
-            if (st->compar(key, h->key) == 0) {
-                Node* x = minNode(h->right); // TODO : aqui tem alloc, memcpy...
-                free(h->key);
-                free(h->value);
-                h->key = emalloc(h->size_key);
-                h->value = emalloc(h->size_val);
-                memcpy(h->key, x->key, h->size_key);
-                memcpy(h->value, x->value, h->size_val);
-                // TODO : dar free no x;
-                // h->val = get(h->right, min(h->right).key);
-                // h->key = min(h->right).key;
-                h->right = deleteMinNode(h->right);
-            }
-            else h->right = deleteKey(st, h->right, key);
+            h->right = deleteKey(st, h->right, key);
         }
-        return balance(h);
+    }
+    return balance(h);
 }
 
-void flipColors(Node* head) {  //TODO : garanto que head (nem os filhos) sao nulos, mas ficar atento a isso
+void flipColors(Node* head) {
 
     head->color = !head->color;
-    head->left->color = ! head->left->color;
+    head->left->color = !head->left->color;
     head->right->color = !head->right->color;
 }
 
@@ -583,15 +583,12 @@ Node* newNode(const void* key, size_t sizekey,const void* val, size_t sizeval, B
     temp_node->color = color;
     temp_node->size = count;
 
-    return temp_node; /* Verificar se isso da merda, proque não to retornando 
-    copia, so referencia*/
+    return temp_node; 
 }
 
 Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const void* val, size_t sizeval) {
-    
     int cmp;
     if (head == NULL){
-        printf("Criação de um novo nó de conteudo %s\n", (char*)key);
         head = newNode(key, sizekey, val, sizeval, RED, 1);
         st->size++;
         return head;
@@ -634,9 +631,7 @@ int sizeNode(Node* n) {
 
 Node* rotateRight(Node* head) {
     
-    Node* x;
-    
-    x =  head->left;
+    Node* x = head->left;
     head->left = x->right;
     x->right = head;
 
@@ -713,7 +708,7 @@ check(RedBlackST st)
  */
 static Bool
 isBST(RedBlackST st)
-{
+{   
     return FALSE;
 }
 
