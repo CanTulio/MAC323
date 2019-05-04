@@ -71,6 +71,7 @@ struct redBlackST {
     int size;
     int (*compar)();
     Node* head;
+    int keys_count;
 };
 
 /*----------------------------------------------------------*/
@@ -206,11 +207,12 @@ RedBlackST
 initST(int (*compar)(const void *key1, const void *key2))
 {
     RedBlackST st;
-    st = emalloc(sizeof(RedBlackST));
+    st = emalloc(sizeof(struct redBlackST));
     
     st->compar = compar;
     st->size = 0; /* contagem de subtrees*/
     st->head = NULL;
+    st->keys_count = 0;
     return st;
 }
 
@@ -477,6 +479,8 @@ int rankNode(RedBlackST st, Node* h, const void *key) {
 void *
 select(RedBlackST st, int k)
 {
+    if (k+1 > st->size)
+        return NULL;
     Node* retKey = selectNode(st->head, k);
     void* cpy = emalloc(retKey->size_key);
     memcpy(cpy, retKey->key, retKey->size_key);
@@ -565,7 +569,17 @@ Node* deleteMaxNode(Node* h) {
 void * 
 keys(RedBlackST st, Bool init)
 {
-    return NULL;
+    void* retVal;
+    if (select(st, st->keys_count) == NULL)
+        return NULL;
+    if (init == TRUE) {
+        retVal = min(st);
+    }
+    else {
+        retVal = select(st, st->keys_count);
+    }
+    st->keys_count++;
+    return retVal;
 }
 
 
@@ -877,8 +891,11 @@ Bool NodeisSizeConsistent(Node* h) {
  */  
 /* check that ranks are consistent */
 static Bool
-isRankConsistent(RedBlackST st)
-{
+isRankConsistent(RedBlackST st){
+    // int i;
+    // for (i = 0; i < st->size; i++) {
+    //     if (i != rank(st, select(st, i))) return FALSE;
+    // return FALSE; // preciso fazer o keys aqui
     return FALSE;
 }
 
