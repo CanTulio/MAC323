@@ -1,3 +1,34 @@
+/****************************************************************
+    Nome: Caio Túlio de Deus Andrade
+    NUSP: 9797232
+
+    Ao preencher esse cabeçalho com o meu nome e o meu número USP,
+    declaro que todas as partes originais desse exercício programa (EP)
+    foram desenvolvidas e implementadas por mim e que portanto não 
+    constituem desonestidade acadêmica ou plágio.
+    Declaro também que sou responsável por todas as cópias desse
+    programa e que não distribui ou facilitei a sua distribuição.
+    Estou ciente que os casos de plágio e desonestidade acadêmica
+    serão tratados segundo os critérios divulgados na página da 
+    disciplina.
+    Entendo que EPs sem assinatura devem receber nota zero e, ainda
+    assim, poderão ser punidos por desonestidade acadêmica.
+
+    Abaixo descreva qualquer ajuda que você recebeu para fazer este
+    EP.  Inclua qualquer ajuda recebida por pessoas (inclusive
+    monitoras e colegas). Com exceção de material de MAC0323, caso
+    você tenha utilizado alguma informação, trecho de código,...
+    indique esse fato abaixo para que o seu programa não seja
+    considerado plágio ou irregular.
+
+    Descrição de ajuda ou indicação de fonte:
+
+
+
+    Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
+
+****************************************************************/
+
 /*
  * MAC0323 Estruturas de Dados e Algoritmo II
  * 
@@ -11,7 +42,6 @@
 
 /* interface para o uso da funcao deste mÃ³dulo */
 
-// TODO : checar alocamento de mometoria
 #include "redblackst.h"  
 
 #include <stdlib.h>  /* free() */
@@ -72,21 +102,69 @@ struct node {
  *
  */
 void flipColors(Node* head);
-Bool isRed(Node* x);
-Node* rotateLeft(Node* head);
-Node* rotateRight(Node* head);
-void freeBST(Node* head);
-Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const void* val, size_t sizeval);
-Node* newNode(const void* key, size_t sizekey, const void* val, size_t sizeval, Bool color, int count);
-int sizeNode(Node* n);
-void delete(RedBlackST st, const void* key);
-Node* deleteKey(RedBlackST st, Node* h, const void* key);
-Node* minNode(Node* h);
-Node* deleteMinNode(Node* h);
-Node* moveRedRight (Node* h);
-Node* moveRedLeft (Node* h);
-Node* balance(Node* h);
+/*---------------------------------------------------------------*/
 
+Bool isRed(Node* x);
+/*---------------------------------------------------------------*/
+
+Node* rotateLeft(Node* head);
+/*---------------------------------------------------------------*/
+
+Node* rotateRight(Node* head);
+/*---------------------------------------------------------------*/
+
+void freeBST(Node* head);
+/*---------------------------------------------------------------*/
+
+Node* putKey(RedBlackST st, Node* head, const void* key, size_t sizekey, const void* val, size_t sizeval);
+/*---------------------------------------------------------------*/
+
+Node* newNode(const void* key, size_t sizekey, const void* val, size_t sizeval, Bool color, int count);
+/*---------------------------------------------------------------*/
+
+int sizeNode(Node* n);
+/*---------------------------------------------------------------*/
+
+void delete(RedBlackST st, const void* key);
+/*---------------------------------------------------------------*/
+
+Node* deleteKey(RedBlackST st, Node* h, const void* key);
+/*---------------------------------------------------------------*/
+
+Node* minNode(Node* h);
+/*---------------------------------------------------------------*/
+
+Node* deleteMinNode(Node* h);
+/*---------------------------------------------------------------*/
+
+Node* deleteMaxNode(Node* h);
+
+Node* moveRedRight (Node* h);
+/*---------------------------------------------------------------*/
+
+Node* moveRedLeft (Node* h);
+/*---------------------------------------------------------------*/
+
+Node* balance(Node* h);
+/*---------------------------------------------------------------*/
+
+int rankNode(RedBlackST st, Node* h, const void *key);
+
+Node* selectNode(Node* h, int k);
+
+Node* deleteMaxNode(Node* h);
+
+Node* maxNode(Node* h);
+
+int nodeHeight(Node* h);
+
+Bool nodeIsBST(RedBlackST st, Node* h, void* min, void* max);
+
+Bool NodeisSizeConsistent(Node* h);
+
+Bool nodeIs23(RedBlackST st, Node* h);
+
+Bool nodeIsBalanced(Node* h, int black);
 /*---------------------------------------------------------------*/
 static Bool
 isBST(RedBlackST st);
@@ -348,9 +426,17 @@ min(RedBlackST st) // check
  *
  */
 void *
-max(RedBlackST st)
-{
-    return NULL;
+max(RedBlackST st) {
+    Node* max =  maxNode(st->head);
+    void* cpy = emalloc(max->size_key);
+    memcpy(cpy, max->key, max->size_key);
+    return cpy;
+}
+
+Node* maxNode(Node* h) {
+    if (h->right == NULL)
+        return h;
+    return maxNode(h->right);
 }
 
 
@@ -365,10 +451,17 @@ max(RedBlackST st)
  *
  */
 int
-rank(RedBlackST st, const void *key)
-{
-    return 0;
+rank(RedBlackST st, const void *key) {
+    return rankNode(st, st->head, key);
 } 
+
+int rankNode(RedBlackST st, Node* h, const void *key) {
+    if (h == NULL) return 0; 
+    int cmp = st->compar(key, h->key); 
+    if      (cmp < 0) return rankNode(st, h->left, key); 
+    else if (cmp > 0) return 1 + sizeNode(h->left) + rankNode(st, h->right, key); 
+    else              return sizeNode(h->left); 
+}
 
 
 /*-----------------------------------------------------------*/
@@ -384,7 +477,18 @@ rank(RedBlackST st, const void *key)
 void *
 select(RedBlackST st, int k)
 {
-    return NULL;
+    Node* retKey = selectNode(st->head, k);
+    void* cpy = emalloc(retKey->size_key);
+    memcpy(cpy, retKey->key, retKey->size_key);
+    return cpy;
+    
+}
+
+Node* selectNode(Node* h, int k) {
+    int t = sizeNode(h->left);
+    if (t > k) return selectNode(h->left, k);
+    else if (t < k) return selectNode(h->right, k-t-1);
+    else return h;
 }
 
 
@@ -419,8 +523,28 @@ deleteMin(RedBlackST st) { // check
  *
  */
 void
-deleteMax(RedBlackST st)
-{
+deleteMax(RedBlackST st) {
+    if (!isRed(st->head->left) && !isRed(st->head->right))
+        st->head->color = RED;
+
+    st->head = deleteMaxNode(st->head);
+    st->size--;
+    if (!isEmpty(st)) st->head->color = BLACK;
+}
+
+Node* deleteMaxNode(Node* h) {
+    if (isRed(h->left))
+            h = rotateRight(h);
+
+    if (h->right == NULL)
+        return NULL;
+
+    if (!isRed(h->right) && !isRed(h->right->left))
+        h = moveRedRight(h);
+
+    h->right = deleteMaxNode(h->right);
+
+    return balance(h);
 }
 
 
@@ -645,7 +769,7 @@ Node* rotateRight(Node* head) {
 }
 
 Node* rotateLeft(Node* h) {
-        /* assert (h != null) && isRed(h->right);*/
+        /* assert (h != NULL) && isRed(h->right);*/
         Node* x = h->right;
         h->right = x->left;
         x->left = h;
@@ -671,7 +795,12 @@ Node* rotateLeft(Node* h) {
 int
 height(RedBlackST st)
 {
-        return 0;
+    return nodeHeight(st->head);
+}
+
+int nodeHeight(Node* h) {
+    if (h == NULL) return -1;
+    return 1 + MAX(nodeHeight(h->left), nodeHeight(h->right));
 }
 
 
@@ -707,9 +836,16 @@ check(RedBlackST st)
  * 
  */
 static Bool
-isBST(RedBlackST st)
-{   
-    return FALSE;
+isBST(RedBlackST st) { 
+    
+    return nodeIsBST(st, st->head, NULL, NULL);
+}
+
+Bool nodeIsBST(RedBlackST st, Node* h, void* min, void* max) {
+    if (h == NULL) return TRUE;
+    if (min != NULL && st->compar(h->key, min) <= 0 ) return FALSE;
+    if (max != NULL && st->compar(h->key, max) >= 0) return FALSE;
+    return nodeIsBST(st, h->left, min, h->key) && nodeIsBST(st, h->right, h->key, max);
 }
 
 
@@ -723,7 +859,13 @@ isBST(RedBlackST st)
 static Bool
 isSizeConsistent(RedBlackST st)
 {
-    return FALSE;
+    return NodeisSizeConsistent(st->head);
+}
+
+Bool NodeisSizeConsistent(Node* h) {
+    if (h == NULL) return TRUE;
+    if (h->size != sizeNode(h->left) + sizeNode(h->right) + 1) return FALSE;
+    return NodeisSizeConsistent(h->left) && NodeisSizeConsistent(h->right);
 }
 
 
@@ -750,7 +892,15 @@ isRankConsistent(RedBlackST st)
 static Bool
 is23(RedBlackST st)
 {
-    return FALSE;
+    return nodeIs23(st, st->head);
+}
+
+Bool nodeIs23(RedBlackST st, Node* h) {
+    if (h == NULL) return TRUE;
+    if (isRed(h->right)) return FALSE;
+    if (h != st->head && isRed(h) && isRed(h->left))
+        return FALSE;
+    return nodeIs23(st, h->left) && nodeIs23(st, h->right);
 }
 
 
@@ -763,5 +913,17 @@ is23(RedBlackST st)
 static Bool
 isBalanced(RedBlackST st)
 {
-    return FALSE;
+    int black = 0;     // number of black links on path from root to min
+    Node* x = st->head;
+    while (x != NULL) {
+        if (!isRed(x)) black++;
+        x = x->left;
+    }
+    return nodeIsBalanced(st->head, black);
+}
+
+Bool nodeIsBalanced(Node* h, int black) {
+    if (h == NULL) return black == 0;
+    if (!isRed(h)) black--;
+    return nodeIsBalanced(h->left, black) && nodeIsBalanced(h->right, black);
 }
