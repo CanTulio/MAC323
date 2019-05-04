@@ -227,7 +227,6 @@ initST(int (*compar)(const void *key1, const void *key2))
 void freeST(RedBlackST st) {
     /*free(st->compar);*/
     freeBST(st->head);
-    free(st->head);
     free(st);
 }
 
@@ -695,6 +694,8 @@ void freeBST(Node* head) {
     if (head != NULL) {
         freeBST(head->left);
         freeBST(head->right);
+        free(head->key);
+        free(head->value);
         free(head);
     }
 }
