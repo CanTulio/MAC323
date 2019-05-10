@@ -55,6 +55,7 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.In;
 import java.util.Comparator;
+import edu.princeton.cs.algs4.MaxPQ;
 
 /**
  *  The {@code TST} class represents an symbol table of key-value
@@ -90,6 +91,19 @@ public class MeuTST<Value extends Comparable<Value>> {
         private Value val;                     // value associated with string
     }
 
+    private class Word<Value extends Comparable<Value>> implements Comparable<Word <Value>> {
+        
+        String s; Value val;
+
+        public Word(String s, Value val) {
+            this.s = s;
+            this.val = val;
+        }
+
+        public int compareTo(Word<Value> w) {
+            return this.val.compareTo(w.val);
+        }
+    }
     /**
      * Initializes an empty string symbol table.
      */
@@ -259,6 +273,24 @@ public class MeuTST<Value extends Comparable<Value>> {
     // all keys starting with given prefix
     public Iterable<String> keysWithPrefixByValue(String prefix) {
         
+        Queue<String> allKeysWithPrefix = (Queue<String>)keysWithPrefix(prefix);
+        Queue<String> collectionOfStrings = new Queue<String>();
+        MaxPQ<Word<Value>> myPq = new MaxPQ<Word<Value>>();
+
+        for (String s : allKeysWithPrefix) {
+            Value res = get(s);
+            Word<Value> myWord = new Word<Value>(s, res);
+            myPq.insert(myWord);
+        }
+
+        allKeysWithPrefix = null;
+
+        while (!myPq.isEmpty()) {
+            String toEnqueue = myPq.delMax().s;
+            collectionOfStrings.enqueue(toEnqueue);
+        }
+
+        return collectionOfStrings;
     }
      
     
@@ -317,6 +349,33 @@ public class MeuTST<Value extends Comparable<Value>> {
         // TAREFA
         if (key == null)
             throw new NullPointerException("delete(): argument key is null");
+        root = delete(root, key, 0);
+    }
+
+    private Node<Value> delete(Node<Value> n, String key, int d) {
+        if (n == null)
+            return null;
+        if (d == key.length() - 1)
+            n.val = null;
+        else {
+            char c = key.charAt(d);
+
+            if (c < n.c)
+                n.left = delete(n.left, key, d);
+
+            if (c > n.c)
+                n.right = delete(n.right, key, d);
+
+            if (c == n.c)
+                n.mid = delete(n.mid, key, d+1);
+        }
+
+        if (n.val != null) return n;
+
+        if(n.left != null || n.right != null || n.mid != null)
+            return n;
+
+        return null;
     }
 
     
