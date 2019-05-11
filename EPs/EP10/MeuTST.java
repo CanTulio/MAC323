@@ -385,5 +385,27 @@ public class MeuTST<Value extends Comparable<Value>> {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
+        StdOut.println("Digite a quantidade de palavras : \n");
+        int a = StdIn.readInt();
+        MeuTST<Integer> tst = new MeuTST<Integer>();
+        for (int i = 0; i < a; i++) {
+            StdOut.println("Digite uma palavra : ");
+            String s = StdIn.readString();
+            tst.put(s, i);
+        }
+        StdOut.println("----------------");
+        
+        Queue<String> teste = new Queue<String>();
+        teste = (Queue<String>)tst.keysWithPrefixByValue("c");
+        for (String s : teste) {
+            StdOut.println(s);
+        }
+
+        tst.delete("carro");
+        teste = (Queue<String>)tst.keys();
+        StdOut.println("----------------");
+        for (String s : teste) {
+            StdOut.println(s);
+        }
     }
 }
