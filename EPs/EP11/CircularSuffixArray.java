@@ -80,7 +80,7 @@ public class CircularSuffixArray {
     // circular suffix array of s
     public CircularSuffixArray(String s) {
         this.n = s.length();
-        this.arr = new CircularSuffix[this.n];
+        this.arr = new CircularSuffix[this.n]; // TODO : rever esse nome
         for(int i = 0 ; i < this.n; i++) {
             arr[i] = new CircularSuffix(s, i);
         }
@@ -96,10 +96,10 @@ public class CircularSuffixArray {
         return this.arr[i].first;
     }
 
-    private void printAllStrings(String s) {
+    private void printAllStrings(String s) { // TODO : remover depois, função de teste
         CircularSuffixArray CSA = new CircularSuffixArray(s);
         for(int j = 0; j < CSA.length(); j++) {
-            String printed ="";
+            String printed =""; // TODO : se for manter, isso é bem gambiarrento, não? 
             for(int i = 0; i < s.length(); i++) {
                 printed += CSA.arr[j].original.charAt((i+CSA.arr[j].first)%s.length());
             }
