@@ -40,7 +40,7 @@ import java.util.Arrays;
 
 public class CircularSuffixArray {
 
-    private class CircularSuffix implements Comparable<CircularSuffix> {
+    public class CircularSuffix implements Comparable<CircularSuffix> {
         
         int first;
         String original;
@@ -68,14 +68,22 @@ public class CircularSuffixArray {
             }
             else
                 return 10;
+
         }
 
+        public char getLastLetter() { // TODO: obriga a classe atual ser publica, não acho isso legla
+            int first = this.first;
+            int last = this.original.length()-1;
+            last = (first + last)%this.original.length();
+            return this.original.charAt(last);
+        }
         // public CircularSuffix next(CircularSuffix prev) {
         //     int newfirst = (this.first++)%this.original.length;
         //     return new CircularSuffix(this.original, newfirst);
         // }
     }
     int n;
+    String s;
     CircularSuffix[] arr;
     // circular suffix array of s
     public CircularSuffixArray(String s) {
