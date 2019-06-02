@@ -221,22 +221,20 @@ void* itens(Bag bag, Bool init) {
     void* return_val;
     if (isEmpty(bag))
         return NULL;
-        
+
     if (init == TRUE) {
         bag->current = bag->head;
-        return_val = emalloc(bag->head->size_item);
-        memcpy(return_val, bag->head->item, bag->head->size_item);
     }
 
-    if (bag->current == NULL) {
+    if (bag->current == NULL) { // Separei esta condição da condição de ser vazia
+    // para que possa resetar o valor de current a cada init (evita que o iterador
+    // nunca seja reiniciado)
         return NULL;
     }
 
+    return_val = emalloc(bag->current->size_item);
+    memcpy(return_val, bag->current->item, bag->current->size_item);
 
-    else {
-        return_val = emalloc(bag->current->size_item);
-        memcpy(return_val, bag->current->item, bag->current->size_item);
-    }
     if(bag->current != NULL) {
         bag->current = bag->current->next;
     }
