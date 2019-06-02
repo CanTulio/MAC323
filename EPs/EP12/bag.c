@@ -219,15 +219,19 @@ Bool isEmpty(Bag bag) {
 void* itens(Bag bag, Bool init) {
     
     void* return_val;
-    if (isEmpty(bag) || bag->current == NULL) {
+    if (isEmpty(bag))
         return NULL;
-    }
-
+        
     if (init == TRUE) {
         bag->current = bag->head;
         return_val = emalloc(bag->head->size_item);
         memcpy(return_val, bag->head->item, bag->head->size_item);
     }
+
+    if (bag->current == NULL) {
+        return NULL;
+    }
+
 
     else {
         return_val = emalloc(bag->current->size_item);
