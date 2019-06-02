@@ -35,9 +35,6 @@
     Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
 
 ****************************************************************/
-
-
-
 /*
  * MAC0323 Algoritmos e Estruturas de Dados II
  * 
@@ -85,14 +82,29 @@
  * Implementação com listas ligada dos itens.
  */
 
+typedef struct node {
+    void* item;
+    size_t size_item;
+    struct node* next;
+} *Node;
+
+
 struct bag {
+    int size;
+    Node current;
+    Node head;
 };
+
 
 /*------------------------------------------------------------*/
 /* 
  * Protótipos de funções administrativas: tem modificador 'static'
+
+ 
  * 
  */
+
+static Node new_node(const void* item, size_t size_item);
 
 /*-----------------------------------------------------------*/
 /*
@@ -101,10 +113,13 @@ struct bag {
  *  RETORNA (referência/ponteiro para) uma bag vazia.
  * 
  */
-Bag
-newBag()
-{
-    return NULL;
+
+Bag newBag() {
+    Bag b = emalloc(sizeof(struct bag));
+    b->size = 0;
+    b->head = NULL;
+    b->current = b->head;
+    return b;
 }
 
 /*-----------------------------------------------------------*/
@@ -115,9 +130,22 @@ newBag()
  *  utilizada.
  *
  */
-void  
-freeBag(Bag bag)
-{
+void freeBag(Bag bag) {
+    
+    Node p, aux;
+
+    if (bag->head == NULL)
+        return;
+
+    p = bag->head;
+    while(p != NULL) {
+        aux = p;
+        p = p->next;
+        aux->next = NULL;
+        free(aux->item);
+        free(aux);
+    }
+    free(bag);
 }    
 
 /*------------------------------------------------------------*/
@@ -135,9 +163,18 @@ freeBag(Bag bag)
  *  Para criar uma copia/clone de ITEM é usado o seu número de bytes NITEM.
  *
  */
-void  
-add(Bag bag, const void *item, size_t nItem)
-{
+void add(Bag bag, const void *item, size_t nItem) {
+    Node new = new_node(item, nItem);
+    if (bag->head == NULL){ 
+        bag->head = new;
+    }
+    else {
+        new->next = bag->head;
+        bag->head = new;
+    }
+
+    bag->current = bag->head;
+    bag->size++;
 }    
 
 /*-----------------------------------------------------------*/
@@ -149,9 +186,8 @@ add(Bag bag, const void *item, size_t nItem)
  *  RETORNA o número de itens em BAG.
  */
 int
-size(Bag bag)
-{
-    return 0;
+size(Bag bag) {
+    return bag->size;
 }
 
 /*-----------------------------------------------------------*/
@@ -163,10 +199,8 @@ size(Bag bag)
  *  RETORNA TRUE se BAG está vazia e FALSE em caso contrário.
  *
  */
-Bool
-isEmpty(Bag bag)
-{
-    return TRUE;
+Bool isEmpty(Bag bag) {
+    return bag->size == 0;
 }
 
 /*-----------------------------------------------------------*/
@@ -182,14 +216,43 @@ isEmpty(Bag bag)
  *  Se entre duas chamadas de ITENS() a BAG é alterada, o comportamento é  indefinido. 
  *  
  */
-void * 
-itens(Bag bag, Bool init)
-{
-    return NULL;
+void* itens(Bag bag, Bool init) {
+    
+    void* return_val;
+    if (isEmpty(bag) || bag->current == NULL) {
+        return NULL;
+    }
+
+    if (init == TRUE) {
+        bag->current = bag->head;
+        return_val = emalloc(bag->head->size_item);
+        memcpy(return_val, bag->head->item, bag->head->size_item);
+    }
+
+    else {
+        return_val = emalloc(bag->current->size_item);
+        memcpy(return_val, bag->current->item, bag->current->size_item);
+    }
+    if(bag->current != NULL) {
+        bag->current = bag->current->next;
+    }
+
+    return return_val;
 }
 
 /*------------------------------------------------------------*/
 /* 
  * Implementaçao de funções administrativas
  */
+
+static Node new_node(const void* item, size_t size_item) {
+    
+    Node new = emalloc(sizeof(struct node));
+    new->item = emalloc(size_item);
+    memcpy(new->item, item, size_item);
+    new->size_item = size_item;
+    new->next = NULL;
+
+    return new;
+}
 
