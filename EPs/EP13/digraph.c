@@ -96,6 +96,12 @@
  */
 struct digraph 
 {
+    int v; // númer de vertices
+    int e; // Numero de arestas (TODO : checar se preciso)
+    // TODO : vetor de adjacencias!
+    int bagSize;
+    int* inDegree;
+    Bag* adjacencyList;
 };
 
 /*------------------------------------------------------------*/
@@ -112,10 +118,19 @@ struct digraph
  *  RETORNA um digrafo com V vértices e 0 arcos.
  * 
  */
-Digraph
-newDigraph(int V)
-{
-    return NULL;
+Digraph newDigraph(int V) {
+    Digraph newD = malloc(sizeof(struct digraph));
+    newD->inDegree = calloc(V, sizeof(int));
+    newD->v = V;
+    newD->e = 0;
+    newD->adjacencyList = malloc(V * sizeof(Bag));
+    for(int i = 0; i < V; i++) {
+        newD->adjacencyList[i] = newBag();
+    }
+    Bag myBag = newBag();
+    newD->bagSize = sizeof(myBag);
+    freeBag(myBag);
+    return newD;
 }
 
 /*-----------------------------------------------------------*/
@@ -126,10 +141,18 @@ newDigraph(int V)
  *  RETORNA um clone de G.
  * 
  */
-Digraph
-cloneDigraph(Digraph G)
-{
-    return NULL;
+Digraph cloneDigraph(Digraph G) {
+    
+    Digraph cloneDigraph = newDigraph(G->v);
+    cloneDigraph->e = G->e;
+    for(int i = 0; i < G->v; i++) {
+        // freeBag(cloneDigraph->adjacencyList[i]);
+        memcpy(cloneDigraph->adjacencyList[i], G->adjacencyList[i], G->bagSize);
+        // TODO : faz sentido usar o memcpy?
+        cloneDigraph->inDegree[i] = G->inDegree[i];
+    }
+
+    return cloneDigraph;
 }
 
 /*-----------------------------------------------------------*/
@@ -176,9 +199,13 @@ readDigraph(String nomeArq)
  *  usada por G.
  *
  */
-void  
-freeDigraph(Digraph G)
-{
+void freeDigraph(Digraph G) {
+    for(int i = 0; i < G->v; i++) {
+        freeBag(G->adjacencyList[i]);
+    }
+    free(G->inDegree);
+    free(G->adjacencyList);
+    free(G);
 }    
 
 /*------------------------------------------------------------*/
@@ -202,7 +229,7 @@ freeDigraph(Digraph G)
 int
 vDigraph(Digraph G)
 {
-    return -1;
+    return G->v;
     
 }
 
@@ -216,7 +243,7 @@ vDigraph(Digraph G)
 int
 eDigraph(Digraph G)
 {
-    return -1;
+    return G->e;
 }
 
 /*-----------------------------------------------------------*/
@@ -227,9 +254,10 @@ eDigraph(Digraph G)
  *  em G.
  *
  */
-void  
-addEdge(Digraph G, vertex v, vertex w)
-{
+void addEdge(Digraph G, vertex v, vertex w) {
+    add(G->adjacencyList[v], w);
+    G->inDegree[w]++;
+    G->e++;
 }    
 
 
@@ -266,7 +294,7 @@ adj(Digraph G, vertex v, Bool init)
 int
 outDegree(Digraph G, vertex v)
 {
-    return -1;
+    return size(G->adjacencyList[v]);
 }
 
 /*-----------------------------------------------------------*/
@@ -280,7 +308,7 @@ outDegree(Digraph G, vertex v)
 int
 inDegree(Digraph G, vertex v)
 {
-    return -1;
+    return G->inDegree[v];
 }
 
 
