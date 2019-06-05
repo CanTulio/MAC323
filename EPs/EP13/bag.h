@@ -66,8 +66,7 @@ freeBag(Bag bag);
  */
 
 /* coloca um item na Bag */
-void  
-add(Bag bag, const void *item, size_t nItem);
+void add(Bag bag, int item);
 
 /* retorna o numero de itens na Bag */
 int
@@ -78,7 +77,6 @@ Bool
 isEmpty(Bag bag);
 
 /* all of the items, as an Iterable */
-void *
-itens(Bag bag, Bool init);
+int *itens(Bag bag, Bool init);
 
 #endif /* _BAG_H */

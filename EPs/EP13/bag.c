@@ -83,8 +83,7 @@
  */
 
 typedef struct node {
-    void* item;
-    size_t size_item;
+    int item;
     struct node* next;
 } *Node;
 
@@ -104,7 +103,7 @@ struct bag {
  * 
  */
 
-static Node new_node(const void* item, size_t size_item);
+static Node new_node(int item);
 
 /*-----------------------------------------------------------*/
 /*
@@ -142,7 +141,6 @@ void freeBag(Bag bag) {
         aux = p;
         p = p->next;
         aux->next = NULL;
-        free(aux->item);
         free(aux);
     }
     free(bag);
@@ -163,8 +161,8 @@ void freeBag(Bag bag) {
  *  Para criar uma copia/clone de ITEM é usado o seu número de bytes NITEM.
  *
  */
-void add(Bag bag, const void *item, size_t nItem) {
-    Node new = new_node(item, nItem);
+void add(Bag bag, int item) {
+    Node new = new_node(item);
     if (bag->head == NULL){ 
         bag->head = new;
     }
@@ -216,9 +214,9 @@ Bool isEmpty(Bag bag) {
  *  Se entre duas chamadas de ITENS() a BAG é alterada, o comportamento é  indefinido. 
  *  
  */
-void* itens(Bag bag, Bool init) {
+int* itens(Bag bag, Bool init) {
     
-    void* return_val;
+    int* return_val;
     if (isEmpty(bag))
         return NULL;
 
@@ -232,8 +230,8 @@ void* itens(Bag bag, Bool init) {
         return NULL;
     }
 
-    return_val = emalloc(bag->current->size_item);
-    memcpy(return_val, bag->current->item, bag->current->size_item);
+    return_val = emalloc(sizeof(int));
+    memcpy(return_val, bag->current->item, sizeof(int));
 
     if(bag->current != NULL) {
         bag->current = bag->current->next;
@@ -247,12 +245,10 @@ void* itens(Bag bag, Bool init) {
  * Implementaçao de funções administrativas
  */
 
-static Node new_node(const void* item, size_t size_item) {
+static Node new_node(int item) {
     
     Node new = emalloc(sizeof(struct node));
-    new->item = emalloc(size_item);
-    memcpy(new->item, item, size_item);
-    new->size_item = size_item;
+    new->item = item;
     new->next = NULL;
 
     return new;
