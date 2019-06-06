@@ -142,14 +142,20 @@ Digraph newDigraph(int V) {
  * 
  */
 Digraph cloneDigraph(Digraph G) {
-    
+    int index;
     Digraph cloneDigraph = newDigraph(G->v);
+    printf("O grafo clone tem %d vertices\n", cloneDigraph->v);
     cloneDigraph->e = G->e;
     for(int i = 0; i < G->v; i++) {
-        // freeBag(cloneDigraph->adjacencyList[i]);
-        memcpy(cloneDigraph->adjacencyList[i], G->adjacencyList[i], G->bagSize);
-        // TODO : faz sentido usar o memcpy?
+        for (index = itens(G->adjacencyList[i], TRUE);
+            index != -1;
+            index = itens(G->adjacencyList[i], FALSE))
+        {    
+            add(cloneDigraph->adjacencyList[i], index);  
+        }
         cloneDigraph->inDegree[i] = G->inDegree[i];
+
+        // TODO : faz sentido usar o memcpy?
     }
 
     return cloneDigraph;
@@ -342,8 +348,8 @@ inDegree(Digraph G, vertex v)
 String
 toString(Digraph G)
 {
-    String stringRepresentation = malloc(sizeof(char) * G->v);
-    sprintf(stringRepresentation + strlen(stringRepresentation), "%d vertices %d edges\n", G->v, G->e);
+    String stringRepresentation = malloc(sizeof(char) * 10000); // OTODO : acertar o tamanho...
+    sprintf(stringRepresentation + strlen(stringRepresentation), " %d vertices, %d edges\n",G->v, G->e);
     int index;
     for(vertex i = 0; i < G->v; i++) {
         sprintf(stringRepresentation + strlen(stringRepresentation), "%d :", i);
