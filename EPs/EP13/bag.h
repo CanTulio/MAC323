@@ -9,27 +9,9 @@
  *    https://algs4.cs.princeton.edu/13stacks/
  *    https://www.ime.usp.br/~pf/estruturas-de-dados/aulas/bag.html
  * 
- */
-
-/* 
- * BAG
- *
- * Um saco (= bag) é um ADT que consiste em uma coleção de coisas ou itens munida 
- * basicamente de duas operações:  
- *
- *     - add(), que insere um item na coleção; e 
- *     - itens(), que é usada para percorre os itens da coleção.
- *  
- * A ordem em que itens() percorre as coisas da coleção não é especificada e está 
- * fora do controle do cliente.
- *
- * Esta implementação usa listas ligada de itens.
- *
- * As operações add() e itens(), além de isEmpty() e size() consomem tempo constante.
- *
- * Para documentação adicional, veja 
- * https://algs4.cs.princeton.edu/13stacks/Bag.java.html
- * Algorithms, 4th Edition, por Robert Sedgewick e Kevin Wayne.
+ * ATENÇÃO: por simplicidade Bag contém apenas inteiros (int) não 
+ * negativos (>=0) que são 'nomes' de vértices (vertex = int) de 
+ * um digrafo.
  */
 
 #ifndef _BAG_H
@@ -37,6 +19,18 @@
 
 #include <stddef.h> /* size_t */
 #include "util.h"   /* Bool */
+
+/* vértices de digrafos são inteiros */
+/* o 'v' minúsculo tem dois motivos: 
+ *   - ser compatível com as notas de aula de 
+ *     Algoritmos em Grafos de Paulo Feofiloff
+ *     https://www.ime.usp.br/~pf/algoritmos_para_grafos/aulas/graphdatastructs.html
+ *   - indicar que, como int, uma variável do tipo vertex __não__ é um 
+ *     ponteiro (não corresponde a uma variável de referência).
+ */
+#ifndef vertex
+#define vertex int
+#endif
 
 typedef struct bag *Bag;
 
@@ -66,7 +60,8 @@ freeBag(Bag bag);
  */
 
 /* coloca um item na Bag */
-void add(Bag bag, int item);
+void  
+add(Bag bag, vertex item);
 
 /* retorna o numero de itens na Bag */
 int
@@ -77,6 +72,7 @@ Bool
 isEmpty(Bag bag);
 
 /* all of the items, as an Iterable */
-int *itens(Bag bag, Bool init);
+vertex
+itens(Bag bag, Bool init);
 
 #endif /* _BAG_H */
