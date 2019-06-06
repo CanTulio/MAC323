@@ -168,7 +168,23 @@ Digraph cloneDigraph(Digraph G) {
 Digraph
 reverseDigraph(Digraph G)
 {
-    return NULL;
+    int index;
+    Digraph reversedDigraph = newDigraph(G->v);
+    reversedDigraph->e = G->e;
+    
+    for(int i = 0; i < G->v; i++) {
+        for // TODO : como identar isso de forma agradavel?
+            (
+            index = itens(G->adjacencyList[i], TRUE); 
+            index != -1; 
+            index = itens(G->adjacencyList[i], FALSE) 
+            ) 
+        {
+            add(reversedDigraph->adjacencyList[index],i);
+        }
+        reversedDigraph->inDegree[i] = size(G->adjacencyList[i]);
+    }
+    return reversedDigraph;
 }
 
 /*-----------------------------------------------------------*/
@@ -326,7 +342,21 @@ inDegree(Digraph G, vertex v)
 String
 toString(Digraph G)
 {
-    return NULL;
+    String stringRepresentation = malloc(sizeof(char) * G->v);
+    sprintf(stringRepresentation + strlen(stringRepresentation), "%d vertices %d edges\n", G->v, G->e);
+    int index;
+    for(vertex i = 0; i < G->v; i++) {
+        sprintf(stringRepresentation + strlen(stringRepresentation), "%d :", i);
+        for (index = itens(G->adjacencyList[i], TRUE);
+            index != -1;
+            index = itens(G->adjacencyList[i], FALSE))
+        {    
+            sprintf(stringRepresentation + strlen(stringRepresentation), "%d ",index);
+        }
+        sprintf(stringRepresentation+strlen(stringRepresentation), "\n");
+    }
+
+    return stringRepresentation;
 }
 
 /*------------------------------------------------------------*/
