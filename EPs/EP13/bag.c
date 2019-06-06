@@ -64,7 +64,7 @@
  */
 
 /* interface para o uso da funcao deste módulo */
-#include "bag.h"  
+#include "bag.h"
 
 #include <stdlib.h>  /* free() */
 #include <string.h>  /* memcpy() */
@@ -214,11 +214,12 @@ Bool isEmpty(Bag bag) {
  *  Se entre duas chamadas de ITENS() a BAG é alterada, o comportamento é  indefinido. 
  *  
  */
-int* itens(Bag bag, Bool init) {
+vertex itens(Bag bag, Bool init) {
     
-    int* return_val;
-    if (isEmpty(bag))
-        return NULL;
+    int return_val;
+    if (isEmpty(bag)) {
+        return -1;
+    }
 
     if (init == TRUE) {
         bag->current = bag->head;
@@ -227,11 +228,10 @@ int* itens(Bag bag, Bool init) {
     if (bag->current == NULL) { // Separei esta condição da condição de ser vazia
     // para que possa resetar o valor de current a cada init (evita que o iterador
     // nunca seja reiniciado)
-        return NULL;
+        return -1;
     }
 
-    return_val = emalloc(sizeof(int));
-    memcpy(return_val, bag->current->item, sizeof(int));
+    return_val = bag->current->item;
 
     if(bag->current != NULL) {
         bag->current = bag->current->next;
