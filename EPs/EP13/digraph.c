@@ -144,7 +144,6 @@ Digraph newDigraph(int V) {
 Digraph cloneDigraph(Digraph G) {
     int index;
     Digraph cloneDigraph = newDigraph(G->v);
-    printf("O grafo clone tem %d vertices\n", cloneDigraph->v);
     cloneDigraph->e = G->e;
     for(int i = 0; i < G->v; i++) {
         for (index = itens(G->adjacencyList[i], TRUE);
@@ -209,7 +208,37 @@ reverseDigraph(Digraph G)
 Digraph
 readDigraph(String nomeArq)
 {
-    return NULL;
+    FILE* fp;
+    Digraph myGraph;
+    int V,E;
+    vertex from, to;
+    from = to = 0;
+
+    String Vs = malloc(sizeof(char)*10);
+    String Es = malloc(sizeof(char)*10);
+    // String from = malloc(sizeof(char)*10);
+    // String to = malloc(sizeof(char)*10);
+
+    fp = fopen(nomeArq, "r");
+    char ch;
+    if(fp == NULL) {
+        printf("Erro na abertura do arquivo...\n");
+        return NULL;
+    }
+    else {
+        fscanf(fp, "%s", Vs);
+        fscanf(fp, "%s", Es);
+        V = atoi(Vs);
+        E = atoi(Es);
+        myGraph = newDigraph(V);
+        myGraph->e = E;
+        while((ch = fgetc(fp)) != EOF) {
+            fscanf(fp, "%d", &from);
+            fscanf(fp, "%d", &to);
+            add(myGraph->adjacencyList[from],to);
+        }
+    }
+    return myGraph;
 }
 
 
@@ -302,7 +331,7 @@ void addEdge(Digraph G, vertex v, vertex w) {
 int 
 adj(Digraph G, vertex v, Bool init)
 {
-    return -1;
+    return itens(G->adjacencyList[v], init);
 }
 
 /*-----------------------------------------------------------*/
@@ -348,6 +377,7 @@ inDegree(Digraph G, vertex v)
 String
 toString(Digraph G)
 {
+    printf("Entrei no to string...\n");
     String stringRepresentation = malloc(sizeof(char) * 10000); // OTODO : acertar o tamanho...
     sprintf(stringRepresentation + strlen(stringRepresentation), " %d vertices, %d edges\n",G->v, G->e);
     int index;
