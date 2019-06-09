@@ -30,9 +30,15 @@
 
     Descrição de ajuda ou indicação de fonte:
 
+    A correção do problema no toString relatada a baixo foi feita com outro aluno,
+    Leandro Rodrigues.
 
 
     Se for o caso, descreva a seguir 'bugs' e limitações do seu programa:
+
+    Por alguma razão, meu programa ,durante o teste do reverseDigraph no unit test,
+    imprimia o grafo original e depois o grafo revertido, não consegui localizar a
+    razão desse erro. Copiando o conteúdo da string para outra menor parece consertar o problema
 
 ****************************************************************/
 
@@ -75,8 +81,6 @@
 
 /* interface para o uso da funcao deste módulo */
 #include "digraph.h"
-
-
 #include "bag.h"     /* add() e itens() */
 #include <stdio.h>   /* fopen(), fclose(), fscanf(), ... */
 #include <stdlib.h>  /* free() */
@@ -141,7 +145,7 @@ Digraph newDigraph(int V) {
  *  RETORNA um clone de G.
  * 
  */
-Digraph cloneDigraph(Digraph G) {
+Digraph cloneDigraph(Digraph G) { // TODO : o clone ta criando ao contrario
     int index;
     Digraph cloneDigraph = newDigraph(G->v);
     cloneDigraph->e = G->e;
@@ -173,14 +177,13 @@ Digraph cloneDigraph(Digraph G) {
 Digraph
 reverseDigraph(Digraph G)
 {
-    int index;
     Digraph reversedDigraph = newDigraph(G->v);
     reversedDigraph->e = G->e;
     
     for(int i = 0; i < G->v; i++) {
         for // TODO : como identar isso de forma agradavel?
             (
-            index = itens(G->adjacencyList[i], TRUE); 
+            int index = itens(G->adjacencyList[i], TRUE); 
             index != -1; 
             index = itens(G->adjacencyList[i], FALSE) 
             ) 
@@ -378,23 +381,27 @@ String
 toString(Digraph G)
 {
     printf("Entrei no to string...\n");
-    String stringRepresentation = malloc(sizeof(char) * 10000); // OTODO : acertar o tamanho...
-    sprintf(stringRepresentation + strlen(stringRepresentation), " %d vertices, %d edges\n",G->v, G->e);
-    int index;
+    String final;
+    String graphToString = malloc(sizeof(char) * (G->v*G->v + 1000)); 
+    sprintf(graphToString + strlen(graphToString), " %d vertices, %d edges\n",G->v, G->e);
+
     for(vertex i = 0; i < G->v; i++) {
-        sprintf(stringRepresentation + strlen(stringRepresentation), "%d :", i);
-        for (index = itens(G->adjacencyList[i], TRUE);
+        sprintf(graphToString + strlen(graphToString), "%d :", i);
+        for (int index = itens(G->adjacencyList[i], TRUE);
             index != -1;
             index = itens(G->adjacencyList[i], FALSE))
         {    
-            sprintf(stringRepresentation + strlen(stringRepresentation), "%d ",index);
+            sprintf(graphToString + strlen(graphToString), "%d ",index);
         }
-        sprintf(stringRepresentation+strlen(stringRepresentation), "\n");
+        sprintf(graphToString+strlen(graphToString), "\n");
     }
+    final = malloc(sizeof(char) * strlen(graphToString) + 1); // retorna uma string
+    // contendo apenas o conteudo de graphToString,evitando retornar uma string muito grande
+    strcpy(final, graphToString);
+    free(graphToString);
 
-    return stringRepresentation;
+    return final;
 }
-
 /*------------------------------------------------------------*/
 /* 
  * Implementaçao de funções administrativas: têm o modificador 
