@@ -100,9 +100,8 @@
  */
 struct digraph 
 {
-    int v; // númer de vertices
-    int e; // Numero de arestas (TODO : checar se preciso)
-    // TODO : vetor de adjacencias!
+    int v;
+    int e; 
     int bagSize;
     int* inDegree;
     Bag* adjacencyList;
@@ -145,20 +144,26 @@ Digraph newDigraph(int V) {
  *  RETORNA um clone de G.
  * 
  */
-Digraph cloneDigraph(Digraph G) { // TODO : o clone ta criando ao contrario
+Digraph cloneDigraph(Digraph G) { 
     int index;
+    int j;
+    vertex* reverse;
     Digraph cloneDigraph = newDigraph(G->v);
-    cloneDigraph->e = G->e;
+
     for(int i = 0; i < G->v; i++) {
-        for (index = itens(G->adjacencyList[i], TRUE);
+        reverse = malloc(sizeof(outDegree(G, i)));
+        for (index = itens(G->adjacencyList[i], TRUE), j = 0;
             index != -1;
             index = itens(G->adjacencyList[i], FALSE))
         {    
-            add(cloneDigraph->adjacencyList[i], index);  
+            reverse[j++] = index; // preserva a ordem da lista de adjacencia original
         }
-        cloneDigraph->inDegree[i] = G->inDegree[i];
 
-        // TODO : faz sentido usar o memcpy?
+        for(j = 0; j < outDegree(G, i); j++) {
+            addEdge(cloneDigraph, i, reverse[outDegree(G,i) - j]);
+        }
+
+        free(reverse);
     }
 
     return cloneDigraph;
@@ -181,7 +186,7 @@ reverseDigraph(Digraph G)
     reversedDigraph->e = G->e;
     
     for(int i = 0; i < G->v; i++) {
-        for // TODO : como identar isso de forma agradavel?
+        for 
             (
             int index = itens(G->adjacencyList[i], TRUE); 
             index != -1; 
@@ -219,8 +224,6 @@ readDigraph(String nomeArq)
 
     String Vs = malloc(sizeof(char)*10);
     String Es = malloc(sizeof(char)*10);
-    // String from = malloc(sizeof(char)*10);
-    // String to = malloc(sizeof(char)*10);
 
     fp = fopen(nomeArq, "r");
     char ch;
@@ -229,18 +232,27 @@ readDigraph(String nomeArq)
         return NULL;
     }
     else {
+        
         fscanf(fp, "%s", Vs);
         fscanf(fp, "%s", Es);
+
         V = atoi(Vs);
         E = atoi(Es);
+
         myGraph = newDigraph(V);
         myGraph->e = E;
+
         while((ch = fgetc(fp)) != EOF) {
             fscanf(fp, "%d", &from);
             fscanf(fp, "%d", &to);
             add(myGraph->adjacencyList[from],to);
         }
     }
+    free(Vs);
+    free(Es);
+    Vs = Es = NULL;
+    
+    fclose(fp);
     return myGraph;
 }
 
@@ -256,9 +268,11 @@ readDigraph(String nomeArq)
 void freeDigraph(Digraph G) {
     for(int i = 0; i < G->v; i++) {
         freeBag(G->adjacencyList[i]);
+        G->adjacencyList[i] = NULL;
     }
     free(G->inDegree);
     free(G->adjacencyList);
+    G->adjacencyList = NULL;
     free(G);
 }    
 
@@ -380,7 +394,6 @@ inDegree(Digraph G, vertex v)
 String
 toString(Digraph G)
 {
-    printf("Entrei no to string...\n");
     String final;
     String graphToString = malloc(sizeof(char) * (G->v*G->v + 1000)); 
     sprintf(graphToString + strlen(graphToString), " %d vertices, %d edges\n",G->v, G->e);
@@ -399,6 +412,7 @@ toString(Digraph G)
     // contendo apenas o conteudo de graphToString,evitando retornar uma string muito grande
     strcpy(final, graphToString);
     free(graphToString);
+    graphToString = NULL;
 
     return final;
 }
