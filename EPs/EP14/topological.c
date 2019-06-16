@@ -250,7 +250,7 @@ newTopological(Digraph G)
         myTopological->rank = calloc(G->v, sizeof(int));
         int i = 0;
         for(int v = 0; v < myTopological->postOrder->size; v++){
-            myTopological->rank[v] = i++;
+            myTopological->rank[myTopological->order->s[v]] = i++;
         }
 
     }
@@ -474,8 +474,8 @@ cycle(Topological ts, Bool init)
 
 static Stack reversePost(Topological ts) {
     Stack reverse = newStack(ts->postOrder->size);
-    for(int v = ts->postOrder->size-1; v > 0; v--){
-        push(reverse, v);
+    for(int v = ts->postOrder->size-1; v >= 0; v--){
+        push(reverse, ts->postOrder->s[v]);
     }
     return reverse;
 
