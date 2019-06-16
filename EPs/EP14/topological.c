@@ -99,6 +99,8 @@
 #include <stdio.h>   /* printf(): para debugging */
 #endif
 
+// TODO : NÃO ARMAZENAR O GRAFO, só fazer um "adj" pra iterar a adjacencia
+
 /*----------------------------------------------------------*/
 /* 
  * Estrutura básica de um Topological
@@ -117,7 +119,7 @@ struct queue {
     int start;
     int end;
     int size;
-    int* v;
+    int* s;
 };
 
 typedef struct queue* Queue;
@@ -126,8 +128,8 @@ typedef struct queue* Queue;
 struct topological  {
     vertex* pre; // pre[v] = v na preordem
     vertex* post; // post[v] = v na posOrdem
-    Stack preOrder; // preciso disso? É pra retornar um iteravel da preorder
-    Stack postOrder;
+    Queue preOrder; // preciso disso? É pra retornar um iteravel da preorder
+    Queue postOrder;
     Bool* marked;
 
     Stack order; // STACK 
@@ -147,7 +149,6 @@ struct topological  {
     int postIteratorCounter;
     int preIteratorCounter;
     int v;
-    Digraph G;
 
 };
 
@@ -171,8 +172,8 @@ static int isfull(Stack s);
 static int peek(Stack s);
 static int pop(Stack s);
 static int push(Stack s, int data);
-static void dfsDFO(Topological ts, vertex v);
-static void dfsCicle(Topological ts, vertex v);
+static void dfsDFO(Topological ts, Digraph G, vertex v);
+static void dfsCicle(Topological ts,Digraph G, vertex v);
 static Queue createQueue(int size);
 static void freeQueue(Queue Q);
 static void enqueue(Queue Q, int content);
@@ -199,7 +200,11 @@ newTopological(Digraph G)
     myTopological->postOrder = calloc(G->v, sizeof(struct queue)); // fila
     myTopological->preOrder = createQueue(G->v);
     myTopological->postOrder = createQueue(G->v);
-    myTopological->marked = calloc(G->v, sizeof(Bool)); // TODO : essa inicialização não parece estar correta
+    myTopological->marked = malloc(G->v*sizeof(int)); // TODO : essa inicialização não parece estar correta
+    
+    for(int i = 0; i < G->v; i++){
+        myTopological->marked[i] = FALSE;
+    }
     //----------------------------------------------------
     
     /*-----------------TOPOLOGICAL--------------------------*/
@@ -220,8 +225,7 @@ newTopological(Digraph G)
     myTopological->orderCounter = 0;
     myTopological->cycleCounter = 0;
     myTopological->v = G->v;
-    myTopological->G = newDigraph(G->v);
-    myTopological->G->e = G->e;
+    // myTopological->G->e = G->e;
     myTopological->onCycle = -1; // TODO : ver como usar essa variável
 
     myTopological->preIteratorCounter = 0;
@@ -229,17 +233,20 @@ newTopological(Digraph G)
 
     for(int i = 0; i < G->v; i++) {
         if(!myTopological->marked[i])
-            dfsDFO(myTopological, i);
+            dfsDFO(myTopological, G, i);
     }
-    free(myTopological->marked);
-    myTopological->marked = calloc(G->v, sizeof(Bool));
+
+    for(int i = 0; i < G->v; i++){
+        myTopological->marked[i] = FALSE;
+    }
+
     for(int i = 0; i < G->v; i++) {
         if(!myTopological->marked[i] && myTopological->cycle == NULL)
-            dfsCicle(myTopological, i);
+            dfsCicle(myTopological, G, i);
     }
 
     if(!hasCycle(myTopological)) {
-        Stack order = reversePost(myTopological);
+        myTopological->order = reversePost(myTopological);
         myTopological->rank = calloc(G->v, sizeof(int));
         int i = 0;
         for(int v = 0; v < myTopological->order->size; v++){
@@ -288,7 +295,7 @@ freeTopological(Topological ts) {
 Bool
 hasCycle(Topological ts)
 {
-    return ts->onCycle != -1;
+    return ts->cycle != NULL;
 }
 
 /*-----------------------------------------------------------*/
@@ -417,10 +424,11 @@ postorder(Topological ts, Bool init)
 vertex
 order(Topological ts, Bool init)
 {
-    if (ts->cycle != -1 || ts->orderCounter == ts->v)
+    if(init == TRUE)
+        ts->orderCounter = 0;
+    if (ts->cycle != NULL || ts->orderCounter == ts->v) // todo : AQUI PODE DAR RUIM
         return -1;
-    else
-        return ts->order->s[ts->orderCounter++];
+    return ts->order->s[ts->orderCounter++];
 }
 
 /*-----------------------------------------------------------*/
@@ -440,7 +448,7 @@ order(Topological ts, Bool init)
 vertex
 cycle(Topological ts, Bool init)
 {
-    if(ts->cycle == -1 || ts->cycleCounter == ts->v)
+    if(ts->cycle != NULL || ts->cycleCounter == ts->v)
         return -1;
     else
         return ts->order->s[ts->orderCounter++];
@@ -465,19 +473,19 @@ static Stack reversePost(Topological ts) {
     return reverse;
 
 }
-static void dfsCicle(Topological ts, vertex v) {
+static void dfsCicle(Topological ts, Digraph G, vertex v) {
     ts->onStack[v] = TRUE;
     ts->marked[v] = TRUE;
-    for (int index = itens(ts->G->adjacencyList[v], TRUE);
+    for (int index = adj(G, v, TRUE);
         index != -1;
-        index = itens(ts->G->adjacencyList[v], FALSE))
+        index = adj(G, v, FALSE))
         {
             if(ts->cycle != NULL)
                 return;
 
             else if(!ts->marked[index]){
                 ts->edgeTo[index] = v;
-                dfsCicle(ts, index);
+                dfsCicle(ts, G, index);
             }
 
             else if(ts->onStack[index]){
@@ -493,16 +501,17 @@ static void dfsCicle(Topological ts, vertex v) {
 }
 
 
-static void dfsDFO(Topological ts, vertex v) {
+static void dfsDFO(Topological ts, Digraph G, vertex v) {
     ts->marked[v] = TRUE;
     ts->pre[v] = ts->preCounter++;
     enqueue(ts->preOrder, v);
-    for (int index = itens(ts->G->adjacencyList[v], TRUE);
+    for (int index = adj(G, v, TRUE);
     index != -1;
-    index = itens(ts->G->adjacencyList[v], FALSE))
+    index = adj(G, v, FALSE))
         {
-            if(!ts->marked[index])
-                dfsDFO(ts, index);
+            if(!ts->marked[index]){
+                dfsDFO(ts, G, index);
+            }
     }
 
     enqueue(ts->postOrder, v);
@@ -536,7 +545,7 @@ static int isempty(Stack s) {
    
 static int isfull(Stack s) {
 
-   if(s->top == s->s)
+   if(s->top == s->size)
       return 1;
    else
       return 0;
@@ -555,7 +564,10 @@ static int pop(Stack s) {
       return data;
    } else {
       printf("Could not retrieve data, Stack is empty.\n");
+      return -1;
    }
+
+   return 0;
 }
 
 static int push(Stack s, int data) {
@@ -565,24 +577,27 @@ static int push(Stack s, int data) {
       s->s[s->top] = data;
    } else {
       printf("Could not insert data, Stack is full.\n");
+      return -1;
    }
+
+   return 0;
 }
 
 static Queue createQueue(int size){
-    Queue Q;
+    Queue Q = malloc(sizeof(struct queue));
     Q->size = size;
     Q->start = Q -> end = 0;
-    Q->v = calloc(size ,sizeof (int) );
+    Q->s = calloc(size ,sizeof (int) );
     return Q;
 }
 
 static void freeQueue(Queue Q){
-    free(Q->v);
+    free(Q->s);
     free(Q);
 }
 
 static void enqueue(Queue Q, int content) {
-    Q->v[Q->end]=content;
+    Q->s[Q->end]=content;
     Q->end=(Q->end+1)%Q->size;
 }
 
@@ -596,5 +611,5 @@ static void removeFromQueue (Queue Q) {
 }
 
 static int firstInQueue (Queue Q) {
-    return (Q->v[Q->start]);
+    return (Q->s[Q->start]);
 }
