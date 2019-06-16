@@ -249,7 +249,7 @@ newTopological(Digraph G)
         myTopological->order = reversePost(myTopological);
         myTopological->rank = calloc(G->v, sizeof(int));
         int i = 0;
-        for(int v = 0; v < myTopological->order->size; v++){
+        for(int v = 0; v < myTopological->postOrder->size; v++){
             myTopological->rank[v] = i++;
         }
 
@@ -270,9 +270,18 @@ newTopological(Digraph G)
  */
 void  
 freeTopological(Topological ts) {
-    free(ts->marked);
+    free(ts->pre);
+    free(ts->post);
+
+    free(ts->preOrder->s);
+    free(ts->preOrder);
+    free(ts->postOrder);
+    free(ts->postOrder->s);
+
     free(ts->edgeTo);
     free(ts->onStack); // TODO : checar se  a alocação e free de bool e'assim mesmo
+
+    free(ts->cycle->s);
     free(ts->cycle);
     free(ts);
 }    
@@ -356,7 +365,7 @@ post(Topological ts, vertex v)
 int
 rank(Topological ts, vertex v)
 {
-    if(ts->onCycle != -1)
+    if(ts->cycle != NULL)
         return -1;
     return ts->rank[v];
 }
@@ -448,7 +457,9 @@ order(Topological ts, Bool init)
 vertex
 cycle(Topological ts, Bool init)
 {
-    if(ts->cycle != NULL || ts->cycleCounter == ts->v)
+    if(init == TRUE)
+        ts->cycleCounter = 0;
+    if(ts->cycle == NULL || ts->cycleCounter == ts->v)
         return -1;
     else
         return ts->order->s[ts->orderCounter++];
@@ -462,12 +473,8 @@ cycle(Topological ts, Bool init)
  */
 
 static Stack reversePost(Topological ts) {
-    Stack reverse = newStack(ts->v);
-    // for (int v = itens(ts->postOrder, TRUE);
-    //     v != -1;
-    //     v = itens(ts->postOrder, FALSE))
-    //     {
-    for(int v = 0; v < ts->postOrder->size; v++){ // aqui ta dando alguma merda
+    Stack reverse = newStack(ts->postOrder->size);
+    for(int v = ts->postOrder->size-1; v > 0; v--){
         push(reverse, v);
     }
     return reverse;
