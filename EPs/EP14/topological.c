@@ -231,7 +231,7 @@ hasCycle(Topological ts)
 Bool
 isDag(Topological ts)
 {
-    return ts->onCycle == -1
+    return ts->onCycle == -1;
 }
 
 /*-----------------------------------------------------------*/
