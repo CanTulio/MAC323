@@ -126,8 +126,8 @@ typedef struct queue* Queue;
 struct topological  {
     vertex* pre; // pre[v] = v na preordem
     vertex* post; // post[v] = v na posOrdem
-    vertex* preOrder; // preciso disso? É pra retornar um iteravel da preorder
-    vertex* postOrder;
+    Stack preOrder; // preciso disso? É pra retornar um iteravel da preorder
+    Stack postOrder;
     Bool* marked;
 
     Stack order; // STACK 
@@ -143,6 +143,9 @@ struct topological  {
     int postCounter;
     int orderCounter;
     int cycleCounter;
+
+    int postIteratorCounter;
+    int preIteratorCounter;
     int v;
     Digraph G;
 
@@ -176,6 +179,7 @@ static void enqueue(Queue Q, int content);
 static int emptyQueue(Queue Q);
 static void removeFromQueue (Queue Q);
 static int firstInQueue (Queue Q);
+static Stack reversePost(Topological ts);
 /*-----------------------------------------------------------*/
 /*
  *  newTopologica(G)
@@ -202,7 +206,6 @@ newTopological(Digraph G)
 
     myTopological->order = calloc(G->v, sizeof(struct stack)); // Stack
     myTopological->order = newStack(G->v);
-    myTopological->rank = calloc(G->v, sizeof(int));
     // -----------------------------------------------------
    
     /*---------------Directed cycle----------------------*/
@@ -221,6 +224,9 @@ newTopological(Digraph G)
     myTopological->G->e = G->e;
     myTopological->onCycle = -1; // TODO : ver como usar essa variável
 
+    myTopological->preIteratorCounter = 0;
+    myTopological->postIteratorCounter = 0;
+
     for(int i = 0; i < G->v; i++) {
         if(!myTopological->marked[i])
             dfsDFO(myTopological, i);
@@ -230,6 +236,16 @@ newTopological(Digraph G)
     for(int i = 0; i < G->v; i++) {
         if(!myTopological->marked[i] && myTopological->cycle == NULL)
             dfsCicle(myTopological, i);
+    }
+
+    if(!hasCycle(myTopological)) {
+        Stack order = reversePost(myTopological);
+        myTopological->rank = calloc(G->v, sizeof(int));
+        int i = 0;
+        for(int v = 0; v < myTopological->order->size; v++){
+            myTopological->rank[v] = i++;
+        }
+
     }
 
 
@@ -351,12 +367,15 @@ rank(Topological ts, vertex v)
  *                   a função retorna -1.
  */
 vertex
-preorder(Topological ts, Bool init)
+preorder(Topological ts, Bool init) // TODO : init não esta fazendo diferença.
 {
-    if(ts->preCounter == ts->v)
+    if(init == TRUE)
+        ts->preIteratorCounter = 0;
+    if(ts->preIteratorCounter == ts->v)
         return -1;
+
     else
-        return ts->preOrder[ts->preCounter++];
+        return ts->preOrder->s[ts->preIteratorCounter++];
 }
 
 /*-----------------------------------------------------------*/
@@ -374,10 +393,11 @@ preorder(Topological ts, Bool init)
 vertex
 postorder(Topological ts, Bool init)
 {
-    if(ts->postCounter == ts->v)
+    if(init == TRUE)
+        ts->postIteratorCounter = 0;
+    if(ts->postIteratorCounter == ts->v)
         return -1;
-    else
-        return ts->postOrder[ts->postCounter++]; // TODO : o postCounter, preCounter e etc tem outro uso, NÃO USAR PRO ITERADOR
+    return ts->postOrder->s[ts->postIteratorCounter++];
 }
 
 /*-----------------------------------------------------------*/
@@ -433,6 +453,18 @@ cycle(Topological ts, Bool init)
  * static.
  */
 
+static Stack reversePost(Topological ts) {
+    Stack reverse = newStack(ts->v);
+    // for (int v = itens(ts->postOrder, TRUE);
+    //     v != -1;
+    //     v = itens(ts->postOrder, FALSE))
+    //     {
+    for(int v = 0; v < ts->postOrder->size; v++){ // aqui ta dando alguma merda
+        push(reverse, v);
+    }
+    return reverse;
+
+}
 static void dfsCicle(Topological ts, vertex v) {
     ts->onStack[v] = TRUE;
     ts->marked[v] = TRUE;
