@@ -139,7 +139,6 @@ struct topological  {
     vertex* edgeTo;
     Bool* onStack; // onStack[v] = o vertice v ta na pilha?
     Stack cycle; //Pilha
-    int onCycle;
 
     int preCounter;
     int postCounter;
@@ -196,12 +195,12 @@ newTopological(Digraph G)
     /*---------------DEPTH FIRST ORDER ----------------*/
     myTopological->pre = calloc(G->v, sizeof(vertex));
     myTopological->post = calloc(G->v, sizeof(vertex));
-    myTopological->preOrder = calloc(G->v, sizeof(struct queue)); // fila
-    myTopological->postOrder = calloc(G->v, sizeof(struct queue)); // fila
+    // myTopological->preOrder = calloc(G->v, sizeof(struct queue)); // fila
+    // myTopological->postOrder = calloc(G->v, sizeof(struct queue)); // fila
     myTopological->preOrder = createQueue(G->v);
     myTopological->postOrder = createQueue(G->v);
     myTopological->marked = malloc(G->v*sizeof(int)); // TODO : essa inicialização não parece estar correta
-    
+    myTopological->rank = NULL;
     for(int i = 0; i < G->v; i++){
         myTopological->marked[i] = FALSE;
     }
@@ -209,7 +208,7 @@ newTopological(Digraph G)
     
     /*-----------------TOPOLOGICAL--------------------------*/
 
-    myTopological->order = calloc(G->v, sizeof(struct stack)); // Stack
+    // myTopological->order = malloc(sizeof(struct stack)); // Stack
     myTopological->order = newStack(G->v);
     // -----------------------------------------------------
    
@@ -226,7 +225,6 @@ newTopological(Digraph G)
     myTopological->cycleCounter = 0;
     myTopological->v = G->v;
     // myTopological->G->e = G->e;
-    myTopological->onCycle = -1; // TODO : ver como usar essa variável
 
     myTopological->preIteratorCounter = 0;
     myTopological->postIteratorCounter = 0;
@@ -244,6 +242,9 @@ newTopological(Digraph G)
         if(!myTopological->marked[i] && myTopological->cycle == NULL)
             dfsCicle(myTopological, G, i);
     }
+    // free(myTopological->order);
+    // free(myTopological->order->s);
+    // myTopological->order = newStack(G->v);
 
     if(!hasCycle(myTopological)) {
         myTopological->order = reversePost(myTopological);
@@ -273,15 +274,21 @@ freeTopological(Topological ts) {
     free(ts->pre);
     free(ts->post);
 
-    free(ts->preOrder->s);
-    free(ts->preOrder);
-    free(ts->postOrder);
-    free(ts->postOrder->s);
+    freeQueue(ts->preOrder);
+    // free(ts->preOrder);
+    freeQueue(ts->postOrder);
+    // free(ts->postOrder);
+    free(ts->order->s);
+    free(ts->order);
+    // free(ts->order);
+    free(ts->marked);
+    if(ts->rank != NULL)
+        free(ts->rank);
 
     free(ts->edgeTo);
     free(ts->onStack); // TODO : checar se  a alocação e free de bool e'assim mesmo
-
-    free(ts->cycle->s);
+    if(ts->cycle != NULL)
+        free(ts->cycle->s);
     free(ts->cycle);
     free(ts);
 }    
@@ -319,7 +326,7 @@ hasCycle(Topological ts)
 Bool
 isDag(Topological ts)
 {
-    return ts->onCycle == -1;
+    return ts->cycle == NULL;
 }
 
 /*-----------------------------------------------------------*/
@@ -435,7 +442,7 @@ order(Topological ts, Bool init)
 {
     if(init == TRUE)
         ts->orderCounter = 0;
-    if (ts->cycle != NULL || ts->orderCounter == ts->v) // todo : AQUI PODE DAR RUIM
+    if (ts->cycle != NULL || ts->orderCounter == ts->v)
         return -1;
     return ts->order->s[ts->orderCounter++];
 }
@@ -462,7 +469,7 @@ cycle(Topological ts, Bool init)
     if(ts->cycle == NULL || ts->cycleCounter == ts->v)
         return -1;
     else
-        return ts->order->s[ts->orderCounter++];
+        return ts->order->s[ts->cycleCounter++];
 }
 
 
@@ -483,28 +490,28 @@ static Stack reversePost(Topological ts) {
 static void dfsCicle(Topological ts, Digraph G, vertex v) {
     ts->onStack[v] = TRUE;
     ts->marked[v] = TRUE;
-    for (int index = adj(G, v, TRUE);
-        index != -1;
-        index = adj(G, v, FALSE))
+    for (int w = adj(G, v, TRUE);
+        w != -1;
+        w = adj(G, v, FALSE))
         {
             if(ts->cycle != NULL)
                 return;
 
-            else if(!ts->marked[index]){
-                ts->edgeTo[index] = v;
-                dfsCicle(ts, G, index);
+            else if(!ts->marked[w]){
+                ts->edgeTo[w] = v;
+                dfsCicle(ts, G, w);
             }
 
-            else if(ts->onStack[index]){
+            else if(ts->onStack[w]){
                 ts->cycle = newStack(ts->v); // TODO : checar esse tamanho
-                for(int x = v; x!=index; x = ts->edgeTo[x])
+                for(int x = v; x != w; x = ts->edgeTo[x]){
                     push(ts->cycle, x);
-                push(ts->cycle, index);
+                    printf("Aoooo\n");
+                }
+                push(ts->cycle, w);
             }
     }
-
-    ts->onStack[v] = FALSE;
-    
+    ts->onStack[v] = FALSE;    
 }
 
 
