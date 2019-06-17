@@ -99,7 +99,6 @@
 #include <stdio.h>   /* printf(): para debugging */
 #endif
 
-// TODO : NÃO ARMAZENAR O GRAFO, só fazer um "adj" pra iterar a adjacencia
 
 /*----------------------------------------------------------*/
 /* 
@@ -192,39 +191,29 @@ Topological
 newTopological(Digraph G)
 {
     Topological myTopological = malloc(sizeof(struct topological));
-    /*---------------DEPTH FIRST ORDER ----------------*/
+
     myTopological->pre = calloc(G->v, sizeof(vertex));
     myTopological->post = calloc(G->v, sizeof(vertex));
-    // myTopological->preOrder = calloc(G->v, sizeof(struct queue)); // fila
-    // myTopological->postOrder = calloc(G->v, sizeof(struct queue)); // fila
     myTopological->preOrder = createQueue(G->v);
     myTopological->postOrder = createQueue(G->v);
-    myTopological->marked = malloc(G->v*sizeof(int)); // TODO : essa inicialização não parece estar correta
+    myTopological->marked = malloc(G->v*sizeof(int)); 
     myTopological->rank = NULL;
     for(int i = 0; i < G->v; i++){
         myTopological->marked[i] = FALSE;
     }
-    //----------------------------------------------------
     
-    /*-----------------TOPOLOGICAL--------------------------*/
 
-    // myTopological->order = malloc(sizeof(struct stack)); // Stack
     myTopological->order = newStack(G->v);
-    // -----------------------------------------------------
    
-    /*---------------Directed cycle----------------------*/
     myTopological->edgeTo = calloc(G->v, sizeof(vertex));
     myTopological->onStack = calloc(G->v, sizeof(vertex));
     myTopological->cycle = NULL;
-    // myTopological->cycle = newStack(G->v);
-    //-----------------------------------------------------
 
     myTopological->preCounter = 0;
     myTopological->postCounter = 0;
     myTopological->orderCounter = 0;
     myTopological->cycleCounter = 0;
     myTopological->v = G->v;
-    // myTopological->G->e = G->e;
 
     myTopological->preIteratorCounter = 0;
     myTopological->postIteratorCounter = 0;
@@ -242,9 +231,7 @@ newTopological(Digraph G)
         if(!myTopological->marked[i] && myTopological->cycle == NULL)
             dfsCicle(myTopological, G, i);
     }
-    // free(myTopological->order);
-    // free(myTopological->order->s);
-    // myTopological->order = newStack(G->v);
+
 
     if(!hasCycle(myTopological)) {
         myTopological->order = reversePost(myTopological);
@@ -258,7 +245,7 @@ newTopological(Digraph G)
 
 
 
-    return myTopological; // TODO : tenho que chamar a dfs aqui?
+    return myTopological;
 }
 
 /*-----------------------------------------------------------*/
@@ -286,7 +273,7 @@ freeTopological(Topological ts) {
         free(ts->rank);
 
     free(ts->edgeTo);
-    free(ts->onStack); // TODO : checar se  a alocação e free de bool e'assim mesmo
+    free(ts->onStack);
     if(ts->cycle != NULL)
         free(ts->cycle->s);
     free(ts->cycle);
@@ -390,7 +377,7 @@ rank(Topological ts, vertex v)
  *                   a função retorna -1.
  */
 vertex
-preorder(Topological ts, Bool init) // TODO : init não esta fazendo diferença.
+preorder(Topological ts, Bool init)
 {
     if(init == TRUE)
         ts->preIteratorCounter = 0;
@@ -503,10 +490,9 @@ static void dfsCicle(Topological ts, Digraph G, vertex v) {
             }
 
             else if(ts->onStack[w]){
-                ts->cycle = newStack(ts->v); // TODO : checar esse tamanho
+                ts->cycle = newStack(ts->v);
                 for(int x = v; x != w; x = ts->edgeTo[x]){
                     push(ts->cycle, x);
-                    printf("Aoooo\n");
                 }
                 push(ts->cycle, w);
             }
